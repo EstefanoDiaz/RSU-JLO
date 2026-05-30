@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\admin\VehicleColorController;
-
+use App\Http\Controllers\admin\VehicleTypeController;
 
 
 /*
@@ -31,3 +31,4 @@ Route::middleware([
 
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
 Route::resource('color', VehicleColorController::class)->names('admin.color');
+Route::resource('tipo-vehiculo', VehicleTypeController::class)->names('admin.tipo-vehiculo');
