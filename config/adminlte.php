@@ -320,7 +320,7 @@ return [
                 [
                     'text' => 'Colores',
                     'icon' => 'fas fa-fw fa-palette',
-                    'url'  => 'vehiculos/colores', // Cambia por tu ruta real
+                    'route'  => 'admin.color.index', 
                 ],
                 [
                     'text' => 'Marcas',

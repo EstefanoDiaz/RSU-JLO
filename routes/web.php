@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\admin\VehicleColorController;
+
 
 
 /*
@@ -28,3 +30,4 @@ Route::middleware([
 });
 
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::resource('color', VehicleColorController::class)->names('admin.color');

@@ -7,6 +7,7 @@
 
 @section('content')
 <div class="container-fluid pb-4">
+    <div class="p-2"></div>
     <div class="card bg-primary text-white text-center shadow-sm mb-4" style="border-radius: 12px; background: linear-gradient(135deg, #0056b3, #007bff);">
         <div class="card-body py-4">
             <h2 class="font-weight-bold mb-2">⭐ ¡Bienvenido al Sistema RSU!</h2>
