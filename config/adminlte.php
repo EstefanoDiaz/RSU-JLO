@@ -335,7 +335,7 @@ return [
                 [
                     'text' => 'Tipo de Vehículos',
                     'icon' => 'fas fa-fw fa-car',
-                    'url'  => 'vehiculos/tipos',
+                 'route' => 'admin.tipo-vehiculo.index', 
                 ],
                 [
                     'text' => 'Vehículos',
