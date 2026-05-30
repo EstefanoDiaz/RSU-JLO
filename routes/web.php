@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\admin\BrandModelController;
 
 
 /*
@@ -28,3 +29,4 @@ Route::middleware([
 });
 
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::resource('brandmodel', BrandModelController::class)->names('admin.brandmodel');
