@@ -9,7 +9,8 @@ class VehicleType extends Model
 {
     use HasFactory;
 
-    protected $table = 'vehicletypes';
+
+    protected $table = 'vehicle_types';
 
     protected $fillable = [
         'name',
@@ -20,4 +21,5 @@ class VehicleType extends Model
     {
         return $this->hasMany(Vehicle::class, 'type_id');
     }
+
 }
