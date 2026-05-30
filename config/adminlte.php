@@ -325,7 +325,7 @@ return [
                 [
                     'text' => 'Marcas',
                     'icon' => 'fas fa-fw fa-tags',
-                    'url'  => 'vehiculos/marcas',
+                    'url'  => 'brand',
                 ],
                 [
                     'text' => 'Modelos',
