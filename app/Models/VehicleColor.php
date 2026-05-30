@@ -12,6 +12,7 @@ class VehicleColor extends Model
 
     protected $fillable = [
         'name',
+        'code',
         'description',
     ];
 
