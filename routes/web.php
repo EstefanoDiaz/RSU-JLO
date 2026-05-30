@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MarcaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 
@@ -28,3 +29,5 @@ Route::middleware([
 });
 
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+
+Route::resource('marcas', MarcaController::class);
