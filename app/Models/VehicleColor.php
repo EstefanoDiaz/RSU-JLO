@@ -9,7 +9,6 @@ class VehicleColor extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    protected $table = 'vehiclecolors';
 
     protected $fillable = [
         'name',
