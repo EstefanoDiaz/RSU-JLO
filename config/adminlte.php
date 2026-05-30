@@ -330,7 +330,7 @@ return [
                 [
                     'text' => 'Modelos',
                     'icon' => 'fas fa-fw fa-wrench',
-                    'url'  => 'vehiculos/modelos',
+                    'url'  => 'brandmodel',
                 ],
                 [
                     'text' => 'Tipo de Vehículos',

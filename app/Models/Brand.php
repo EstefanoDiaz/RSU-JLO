@@ -5,19 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VehicleColor extends Model
+class Brand extends Model
 {
     use HasFactory;
-    protected $guarded = [];
-    protected $table = 'vehiclecolors';
 
     protected $fillable = [
         'name',
         'description',
+        'logo',
     ];
 
-    public function vehicles()
+    public function brandmodels()
     {
-        return $this->hasMany(Vehicle::class, 'color_id');
+        return $this->hasMany(BrandModel::class);
     }
 }

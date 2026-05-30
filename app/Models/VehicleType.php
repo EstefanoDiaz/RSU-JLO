@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VehicleColor extends Model
+class VehicleType extends Model
 {
     use HasFactory;
-    protected $guarded = [];
-    protected $table = 'vehiclecolors';
+
+    protected $table = 'vehicletypes';
 
     protected $fillable = [
         'name',
@@ -18,6 +18,6 @@ class VehicleColor extends Model
 
     public function vehicles()
     {
-        return $this->hasMany(Vehicle::class, 'color_id');
+        return $this->hasMany(Vehicle::class, 'type_id');
     }
 }
