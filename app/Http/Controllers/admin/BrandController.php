@@ -11,35 +11,39 @@ use Yajra\DataTables\Facades\DataTables;
 
 class BrandController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
+
     public function index(Request $request)
     {
-        $brands = Brand::withCount('brandmodels')->get();
-
         if ($request->ajax()) {
+            $brands = Brand::withCount('brandmodels');
+
             return DataTables::of($brands)
                 ->addColumn('logo', function ($brand) {
                     $url = $brand->logo
                         ? asset($brand->logo)
-                        : 'https://placehold.co/50x50?text=Sin+Logo';
-                    return '<img src="' . $url . '" width="50px" class="img-thumbnail rounded">';
+                        : 'https://placehold.co/90x50?text=Sin+Logo';
+                    
+                    return '<div class="d-flex align-items-center justify-content-center bg-white border rounded shadow-sm mx-auto" style="width: 90px; height: 50px; overflow: hidden; padding: 3px;">' .
+                           '<img src="' . $url . '" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="logo">' .
+                           '</div>';
                 })
                 ->addColumn('actions', function ($brand) {
-                    return '
-                        <button class="btn btn-sm btn-warning btn-editar" id="' . $brand->id . '">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                        <form action="' . route('admin.brand.destroy', $brand->id) . '" method="POST"
-                            class="frmEliminar d-inline">' . method_field('DELETE') . csrf_field() . '
-                            <button class="btn btn-sm btn-danger" type="submit">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>';
+                    $btnEdit = '<button class="btn btn-sm btn-warning btn-editar mr-1" id="' . $brand->id . '" title="Editar"><i class="fas fa-pen text-dark"></i></button>';
+                    
+                    $btnDelete = '<form action="' . route('admin.brand.destroy', $brand->id) . '" method="POST" class="frmEliminar" style="display:inline; margin:0; padding:0; border:none;">' 
+                        . method_field('DELETE') . csrf_field() . 
+                        '<button class="btn btn-sm btn-danger" type="submit" title="Eliminar" style="margin:0; vertical-align:middle;"><i class="fas fa-trash-alt"></i></button></form>';
+                    
+                    return $btnEdit . $btnDelete;
                 })
                 ->rawColumns(['logo', 'actions'])
                 ->make(true);
         }
 
-        return view('admin.brands.index', compact('brands'));
+        return view('admin.brands.index');
     }
 
     public function create()
@@ -51,25 +55,25 @@ class BrandController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|unique:brands,name',
+                'name' => 'required|unique:brands,name|max:100',
             ]);
 
-            $logo = null;
+            $logoUrl = null;
             if ($request->hasFile('logo')) {
                 $path = $request->file('logo')->store('public/brand_logos');
-                $logo = Storage::url($path);
+                $logoUrl = Storage::url($path);
             }
 
             Brand::create([
                 'name'        => $request->name,
                 'description' => $request->description,
-                'logo'        => $logo,
+                'logo'        => $logoUrl,
             ]);
 
             return response()->json(['message' => 'Marca registrada correctamente'], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = implode(' | ', $e->validator->errors()->all());
-            return response()->json(['message' => 'Validación: ' . $errors], 422);
+            return response()->json(['message' => $errors], 422);
         } catch (\Throwable $th) {
             Log::error($th);
             return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
@@ -91,9 +95,8 @@ class BrandController extends Controller
                 'name' => 'required|unique:brands,name,' . $id,
             ]);
 
-            $logo = $brand->logo;
+            $logoUrl = $brand->logo;
             if ($request->hasFile('logo')) {
-                // Eliminar logo anterior
                 if ($brand->logo) {
                     $filePath = str_replace('/storage', 'public', $brand->logo);
                     if (Storage::exists($filePath)) {
@@ -101,19 +104,19 @@ class BrandController extends Controller
                     }
                 }
                 $path = $request->file('logo')->store('public/brand_logos');
-                $logo = Storage::url($path);
+                $logoUrl = Storage::url($path);
             }
 
             $brand->update([
                 'name'        => $request->name,
                 'description' => $request->description,
-                'logo'        => $logo,
+                'logo'        => $logoUrl,
             ]);
 
             return response()->json(['message' => 'Marca actualizada correctamente'], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = implode(' | ', $e->validator->errors()->all());
-            return response()->json(['message' => 'Validación: ' . $errors], 422);
+            return response()->json(['message' => $errors], 422);
         } catch (\Throwable $th) {
             Log::error($th);
             return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
@@ -127,7 +130,7 @@ class BrandController extends Controller
 
             if ($brand->brandmodels_count > 0) {
                 return response()->json([
-                    'message' => 'No se puede eliminar: la marca tiene ' . $brand->brandmodels_count . ' modelo(s) asociado(s).'
+                    'message' => 'No se puede eliminar la marca: tiene ' . $brand->brandmodels_count . ' modelo(s) asociado(s) en el sistema.'
                 ], 422);
             }
 

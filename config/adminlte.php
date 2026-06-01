@@ -63,9 +63,9 @@ return [
     |
     */
 
-    'logo' => '<b>Gestión</b> RSU',
-    'logo_img' => 'images/logoJLO.png',
-    'logo_img_class' => 'brand-image img-circle elevation-3 bg-white p-1',
+    'logo' => '',
+    'logo_img' => 'images/logoBlanco.png',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => 'Logo RSU JLO',
@@ -238,7 +238,7 @@ return [
 
     'right_sidebar' => false,
     'right_sidebar_icon' => 'fas fa-cogs',
-    'right_sidebar_theme' => 'dark',
+    'right_sidebar_theme' => 'light',
     'right_sidebar_slide' => true,
     'right_sidebar_push' => true,
     'right_sidebar_scrollbar_theme' => 'os-theme-light',
@@ -325,7 +325,8 @@ return [
                 [
                     'text' => 'Marcas',
                     'icon' => 'fas fa-fw fa-tags',
-                    'url'  => 'brand',
+
+                    'route'  => 'admin.brand.index',
                 ],
                 [
                     'text' => 'Modelos',
@@ -473,6 +474,16 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'CustomCrud' => [
+            'active' => true, 
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true, 
+                    'location' => 'custom-crud.css', 
                 ],
             ],
         ],
