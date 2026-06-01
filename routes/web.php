@@ -3,9 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\admin\VehicleColorController;
-
 use App\Http\Controllers\admin\BrandModelController;
-
+use App\Http\Controllers\admin\BrandController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,3 +32,4 @@ Route::middleware([
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
 Route::resource('color', VehicleColorController::class)->names('admin.color');
 Route::resource('brandmodel', BrandModelController::class)->names('admin.brandmodel');
+Route::resource('brand', BrandController::class)->names('admin.brand');
