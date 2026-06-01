@@ -351,9 +351,35 @@ return [
             ],
         ],
         [
-            'text' => 'Gestión de personal',
-            'url'  => 'personal',
-            'icon' => 'fas fa-fw fa-users',
+            'text'    => 'Gestión de personal',
+            'icon'    => 'fas fa-fw fa-users-cog', 
+            'submenu' => [
+                [
+                    'text'  => 'Tipos de personal',
+                    'icon'  => 'fas fa-fw fa-user-tag',
+                    'route' => 'admin.usertype.index', 
+                ],
+                [
+                    'text' => 'Personal',
+                    'icon' => 'fas fa-fw fa-user-tie',
+                    'route'  => 'admin.user.index',
+                ],
+                [
+                    'text' => 'Contratos',
+                    'icon' => 'fas fa-fw fa-file-contract',
+                    'url'  => 'personal/contratos',
+                ],
+                [
+                    'text' => 'Asistencias',
+                    'icon' => 'fas fa-fw fa-calendar-check',
+                    'url'  => 'personal/asistencias',
+                ],
+                [
+                    'text' => 'Vacaciones',
+                    'icon' => 'fas fa-fw fa-plane',
+                    'url'  => 'personal/vacaciones',
+                ],
+            ],
         ],
         [
             'text' => 'Programación',

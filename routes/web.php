@@ -7,7 +7,8 @@ use App\Http\Controllers\admin\VehicleColorController;
 use App\Http\Controllers\admin\BrandModelController;
 use App\Http\Controllers\admin\VehicleTypeController;
 use App\Http\Controllers\admin\BrandController;
-
+use App\Http\Controllers\admin\UserTypeController;
+use App\Http\Controllers\admin\UserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -36,3 +37,5 @@ Route::resource('color', VehicleColorController::class)->names('admin.color');
 Route::resource('brandmodel', BrandModelController::class)->names('admin.brandmodel');
 Route::resource('tipo-vehiculo', VehicleTypeController::class)->names('admin.tipo-vehiculo');
 Route::resource('brand', BrandController::class)->names('admin.brand');
+Route::resource('user-type', UserTypeController::class)->names('admin.usertype');
+Route::resource('user', UserController::class)->names('admin.user');
