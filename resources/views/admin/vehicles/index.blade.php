@@ -38,6 +38,57 @@
     </div>
 </div>
 
+
+{{-- Modal Imágenes --}}
+<div class="modal fade" id="modalImagenes" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #071D38, #123F75);">
+                <h5 class="modal-title font-weight-bold">
+                    <i class="fas fa-images mr-2"></i> Imágenes: <span id="vehicleNameModal"></span>
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body bg-light p-4">
+
+                {{-- Subir imagen --}}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="font-weight-bold text-dark mb-3">
+                            <i class="fas fa-upload mr-1 text-primary"></i> Subir nueva imagen
+                        </h6>
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="inputImagen" accept="image/*">
+                                <label class="custom-file-label" for="inputImagen">Seleccionar imagen...</label>
+                            </div>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary font-weight-bold" id="btnSubirImagen">
+                                    <i class="fas fa-upload mr-1"></i> Subir
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center d-none" id="previewContainer">
+                            <img id="previewImg" src="" class="img-thumbnail shadow-sm" style="max-height:160px;">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Galería --}}
+                <div id="galeriaImagenes" class="row">
+                    <div class="col-12 text-center text-muted py-3">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer bg-white border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal --}}
 <div class="modal fade" id="VehicleModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -218,6 +269,141 @@ function bindFormSubmit() {
         });
     });
 }
+
+// ─── IMÁGENES ──────────────────────────────────────────────────────────────
+let vehiculoActualId = null;
+
+$(document).on('click', '.btn-imagenes', function () {
+    vehiculoActualId = $(this).data('id');
+    cargarImagenes(vehiculoActualId);
+    $('#modalImagenes').modal('show');
+});
+
+function cargarImagenes(id) {
+    $('#galeriaImagenes').html('<div class="col-12 text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+    $.get(`/vehicle/${id}/images`, function (data) {
+        $('#vehicleNameModal').text(data.vehicle);
+        renderGaleria(data.images);
+    });
+}
+
+function renderGaleria(images) {
+    if (images.length === 0) {
+        $('#galeriaImagenes').html(`
+            <div class="col-12 text-center text-muted py-4">
+                <i class="fas fa-image fa-3x mb-2 d-block"></i>
+                <p>Sin imágenes registradas</p>
+            </div>`);
+        return;
+    }
+    let html = '';
+    images.forEach(img => {
+        html += `
+        <div class="col-md-4 col-6 mb-3" id="img-card-${img.id}">
+            <div class="card border-0 shadow-sm h-100 ${img.profile ? 'border-primary' : ''}">
+                <img src="/${img.image}" class="card-img-top" style="height:160px; object-fit:cover;">
+                <div class="card-body p-2 text-center">
+                    ${img.profile
+                        ? '<span class="badge badge-primary px-2 py-1"><i class="fas fa-star mr-1"></i>Perfil</span>'
+                        : `<button class="btn btn-sm btn-outline-primary btn-set-profile mb-1" data-id="${img.id}">
+                               <i class="fas fa-star mr-1"></i>Poner como perfil
+                           </button>`
+                    }
+                    <button class="btn btn-sm btn-outline-danger btn-delete-img d-block w-100 mt-1" data-id="${img.id}">
+                        <i class="fas fa-trash mr-1"></i>Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    });
+    $('#galeriaImagenes').html(html);
+}
+
+// Preview antes de subir
+$('#inputImagen').on('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            $('#previewImg').attr('src', e.target.result);
+            $('#previewContainer').removeClass('d-none');
+        };
+        reader.readAsDataURL(file);
+        $(this).next('.custom-file-label').text(file.name);
+    }
+});
+
+// Subir imagen
+$('#btnSubirImagen').on('click', function () {
+    const file = $('#inputImagen')[0].files[0];
+    if (!file) return Swal.fire('Aviso', 'Selecciona una imagen primero', 'warning');
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('_token', '{{ csrf_token() }}');
+
+    $.ajax({
+        url: `/vehicle/${vehiculoActualId}/upload-image`,
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function () {
+            Swal.fire({ title: '¡Listo!', text: 'Imagen subida correctamente', icon: 'success', timer: 1500, showConfirmButton: false });
+            $('#inputImagen').val('');
+            $('.custom-file-label').text('Seleccionar imagen...');
+            $('#previewContainer').addClass('d-none');
+            cargarImagenes(vehiculoActualId);
+        },
+        error: function (xhr) {
+            Swal.fire('Error', xhr.responseJSON?.message ?? 'Error al subir', 'error');
+        }
+    });
+});
+
+// Eliminar imagen
+$(document).on('click', '.btn-delete-img', function () {
+    const imgId = $(this).data('id');
+    Swal.fire({
+        title: '¿Eliminar imagen?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#071D38',
+        cancelButtonColor: '#a13825',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/vehicle/image/${imgId}`,
+                method: 'POST',
+                data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
+                success: function () {
+                    cargarImagenes(vehiculoActualId);
+                },
+                error: function (xhr) {
+                    Swal.fire('Error', xhr.responseJSON?.message ?? 'Error al eliminar', 'error');
+                }
+            });
+        }
+    });
+});
+
+// Poner como perfil
+$(document).on('click', '.btn-set-profile', function () {
+    const imgId = $(this).data('id');
+    $.ajax({
+        url: `/vehicle/image/${imgId}/profile`,
+        method: 'POST',
+        data: { _method: 'PUT', _token: '{{ csrf_token() }}' },
+        success: function () {
+            cargarImagenes(vehiculoActualId);
+        },
+        error: function (xhr) {
+            Swal.fire('Error', xhr.responseJSON?.message ?? 'Error', 'error');
+        }
+    });
+});
 
 function refreshTable() {
     $('#tblVehicles').DataTable().ajax.reload(null, false);

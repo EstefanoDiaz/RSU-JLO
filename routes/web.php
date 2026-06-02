@@ -47,4 +47,16 @@ Route::middleware([
     Route::get('vehicle/models-by-brand', [VehicleController::class, 'modelsByBrand'])->name('admin.vehicle.modelsByBrand');
     Route::resource('vehicle', VehicleController::class)->names('admin.vehicle');
 
+    
+    // Rutas auxiliares sin parámetros
+    Route::get('vehicle/models-by-brand', [VehicleController::class, 'modelsByBrand'])->name('admin.vehicle.modelsByBrand');
+
+    // Rutas de imágenes
+    Route::get('vehicle/{id}/images',             [VehicleController::class, 'getImages'])->name('admin.vehicle.images');
+    Route::post('vehicle/{id}/upload-image',      [VehicleController::class, 'uploadImage'])->name('admin.vehicle.upload-image');
+    Route::delete('vehicle/image/{imageId}',      [VehicleController::class, 'deleteImage'])->name('admin.vehicle.delete-image');
+    Route::put('vehicle/image/{imageId}/profile', [VehicleController::class, 'setProfile'])->name('admin.vehicle.set-profile');
+
+    // Resource al final
+    Route::resource('vehicle', VehicleController::class)->names('admin.vehicle');   
 });

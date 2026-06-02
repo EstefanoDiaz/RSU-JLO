@@ -195,4 +195,94 @@ class VehicleController extends Controller
                             ->get();
         return response()->json($models);
     }
+
+    // Mostrar imágenes de un vehículo
+public function getImages(string $id)
+{
+    try {
+        $vehicle = Vehicle::with('images')->findOrFail($id);
+        return response()->json([
+            'images' => $vehicle->images,
+            'vehicle' => $vehicle->name . ' - ' . $vehicle->plate,
+        ]);
+    } catch (\Throwable $th) {
+        return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
+    }
+}
+
+// Subir imagen
+public function uploadImage(Request $request, string $id)
+{
+    try {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $vehicle = Vehicle::findOrFail($id);
+
+        $file     = $request->file('image');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path     = $file->storeAs('vehicles', $filename, 'public');
+
+        // Si es la primera imagen, marcarla como perfil
+        $isFirst = $vehicle->images()->count() === 0;
+
+        VehicleImage::create([
+            'vehicle_id' => $vehicle->id,
+            'image'      => 'storage/' . $path,
+            'profile'    => $isFirst ? 1 : 0,
+        ]);
+
+        return response()->json(['message' => 'Imagen subida correctamente'], 200);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json(['message' => implode(' | ', $e->validator->errors()->all())], 422);
+    } catch (\Throwable $th) {
+        Log::error($th);
+        return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
+    }
+}
+
+// Eliminar imagen
+public function deleteImage(string $imageId)
+{
+    try {
+        $image = VehicleImage::findOrFail($imageId);
+        $wasProfile = $image->profile;
+        $vehicleId  = $image->vehicle_id;
+
+        // Borrar archivo físico
+        $filePath = str_replace('storage/', '', $image->image);
+        \Storage::disk('public')->delete($filePath);
+
+        $image->delete();
+
+        // Si era la de perfil, asignar la siguiente como perfil
+        if ($wasProfile) {
+            $next = VehicleImage::where('vehicle_id', $vehicleId)->first();
+            if ($next) $next->update(['profile' => 1]);
+        }
+
+        return response()->json(['message' => 'Imagen eliminada correctamente'], 200);
+    } catch (\Throwable $th) {
+        return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
+    }
+}
+
+// Marcar imagen como perfil
+public function setProfile(string $imageId)
+{
+    try {
+        $image = VehicleImage::findOrFail($imageId);
+
+        // Quitar perfil a todas las del vehículo
+        VehicleImage::where('vehicle_id', $image->vehicle_id)->update(['profile' => 0]);
+
+        // Marcar esta como perfil
+        $image->update(['profile' => 1]);
+
+        return response()->json(['message' => 'Imagen de perfil actualizada'], 200);
+    } catch (\Throwable $th) {
+        return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
+    }
+}
 }
