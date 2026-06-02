@@ -21,7 +21,7 @@
     </div>
 
     <div class="col-md-5 text-center d-flex flex-column justify-content-center align-items-center border-left pl-md-4">
-        {!! Form::label('logo', 'Logotipo Institucional', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider d-block mb-3']) !!}
+        {!! Form::label('logo', 'Logotipo', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider d-block mb-3']) !!}
         
         <div class="mb-3 d-flex align-items-center justify-content-center bg-white border shadow-sm rounded-xl overflow-hidden p-2 text-center" style="width: 160px; height: 100px;">
             @php
