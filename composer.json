@@ -12,9 +12,8 @@
         "laravel/jetstream": "^4.3",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "laravelcollective/html": "^6.4",
-        "livewire/livewire": "^3.0",
         "spatie/laravel-html": "^3.13",
+        "livewire/livewire": "^3.0",
         "yajra/laravel-datatables-oracle": "^10.0"
     },
     "require-dev": {

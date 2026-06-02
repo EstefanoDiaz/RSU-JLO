@@ -9,6 +9,7 @@ use App\Http\Controllers\admin\VehicleTypeController;
 use App\Http\Controllers\admin\BrandController;
 use App\Http\Controllers\admin\UserTypeController;
 use App\Http\Controllers\admin\UserController;
+use App\Http\Controllers\admin\VehicleController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -39,3 +40,5 @@ Route::resource('tipo-vehiculo', VehicleTypeController::class)->names('admin.tip
 Route::resource('brand', BrandController::class)->names('admin.brand');
 Route::resource('user-type', UserTypeController::class)->names('admin.usertype');
 Route::resource('user', UserController::class)->names('admin.user');
+Route::get('vehicle/models-by-brand', [VehicleController::class, 'modelsByBrand'])->name('admin.vehicle.modelsByBrand');
+Route::resource('vehicle', VehicleController::class)->names('admin.vehicle');

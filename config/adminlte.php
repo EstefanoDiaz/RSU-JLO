@@ -341,7 +341,7 @@ return [
                 [
                     'text' => 'Vehículos',
                     'icon' => 'fas fa-fw fa-truck-moving',
-                    'url'  => 'vehiculos/lista',
+                    'route' => 'admin.vehicle.index',
                 ],
                 [
                     'text' => 'Mantenimientos',

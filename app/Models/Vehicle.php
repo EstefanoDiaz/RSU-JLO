@@ -18,6 +18,8 @@ class Vehicle extends Model
         'year',
         'occupant_capacity',
         'load_capacity',
+        'fuel_capacity',
+        'compaction_capacity',
         'description',
         'status',
         'brand_id',
