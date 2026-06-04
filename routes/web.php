@@ -9,6 +9,7 @@ use App\Http\Controllers\admin\BrandController;
 use App\Http\Controllers\admin\UserTypeController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\admin\VehicleController;
+use App\Http\Controllers\admin\ContractController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,4 +60,9 @@ Route::middleware([
 
     // Resource al final
     Route::resource('vehicle', VehicleController::class)->names('admin.vehicle');   
+
+
+
+    Route::post('contract/{id}/toggle', [ContractController::class, 'toggle'])->name('admin.contract.toggle');
+    Route::resource('contract', ContractController::class)->names('admin.contract');
 });

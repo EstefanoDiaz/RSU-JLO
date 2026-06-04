@@ -367,7 +367,7 @@ return [
                 [
                     'text' => 'Contratos',
                     'icon' => 'fas fa-fw fa-file-contract',
-                    'url'  => 'personal/contratos',
+                    'route'  => 'admin.contract.index',
                 ],
                 [
                     'text' => 'Asistencias',
