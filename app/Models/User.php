@@ -79,4 +79,16 @@ class User extends Authenticatable
         // Vinculamos con la clase correspondiente indicando la llave foránea de la migración
         return $this->belongsTo(UserType::class, 'usertype_id');
     }
+
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class, 'user_id');
+    }
+
+    
+    public function vacations()
+    {
+        return $this->hasMany(Vacation::class, 'user_id');
+    }
 }
