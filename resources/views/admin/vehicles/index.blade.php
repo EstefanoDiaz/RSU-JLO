@@ -354,6 +354,7 @@ $('#btnSubirImagen').on('click', function () {
             $('.custom-file-label').text('Seleccionar imagen...');
             $('#previewContainer').addClass('d-none');
             cargarImagenes(vehiculoActualId);
+            refreshTable();
         },
         error: function (xhr) {
             Swal.fire('Error', xhr.responseJSON?.message ?? 'Error al subir', 'error');
@@ -380,6 +381,7 @@ $(document).on('click', '.btn-delete-img', function () {
                 data: { _method: 'DELETE', _token: '{{ csrf_token() }}' },
                 success: function () {
                     cargarImagenes(vehiculoActualId);
+                    refreshTable();
                 },
                 error: function (xhr) {
                     Swal.fire('Error', xhr.responseJSON?.message ?? 'Error al eliminar', 'error');
@@ -398,6 +400,7 @@ $(document).on('click', '.btn-set-profile', function () {
         data: { _method: 'PUT', _token: '{{ csrf_token() }}' },
         success: function () {
             cargarImagenes(vehiculoActualId);
+            refreshTable();
         },
         error: function (xhr) {
             Swal.fire('Error', xhr.responseJSON?.message ?? 'Error', 'error');
