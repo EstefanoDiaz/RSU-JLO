@@ -1,228 +1,156 @@
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-{{-- Info del empleado --}}
-<div class="form-group">
-    <label for="user_id">Empleado <span class="text-danger">*</span></label>
-    <select name="user_id" id="user_id" class="form-control select2-employee" required style="width:100%">
-        <option value="">Seleccione un empleado</option>
-        @foreach($users as $user)
-            <option value="{{ $user->id }}"
-                {{ old('user_id', isset($attendance) ? $attendance->user_id : '') == $user->id ? 'selected' : '' }}>
-                {{ $user->name }} - DNI: {{ $user->dni }}
-            </option>
-        @endforeach
-    </select>
-    <small class="text-muted">Busque por nombre, apellido o DNI del empleado</small>
-</div>
-
-{{-- Card info empleado --}}
-<div id="employee-info" class="alert alert-light border mb-3 d-none">
-    <div class="row">
-        <div class="col-md-6">
-            <p class="mb-1"><i class="fas fa-user text-primary mr-1"></i> <strong>Nombre completo:</strong> <span id="info-name"></span></p>
-            <p class="mb-1"><i class="fas fa-envelope text-primary mr-1"></i> <strong>Email:</strong> <span id="info-email"></span></p>
-        </div>
-        <div class="col-md-6">
-            <p class="mb-1"><i class="fas fa-id-card text-primary mr-1"></i> <strong>DNI:</strong> <span id="info-dni"></span></p>
-            <p class="mb-1"><i class="fas fa-phone text-primary mr-1"></i> <strong>Teléfono:</strong> <span id="info-phone"></span></p>
-        </div>
-    </div>
-    <hr class="my-2">
-    <p class="mb-1 font-weight-bold"><i class="fas fa-history mr-1"></i> Registros del día:</p>
-    <div id="registros-dia" class="text-muted"><small>No hay registros para este día.</small></div>
-    <div id="primer-registro-alert" class="alert alert-warning py-1 mb-0 mt-2 d-none">
-        <small><i class="fas fa-exclamation-triangle mr-1"></i> Primer registro del turno - debe ser <strong>ENTRADA</strong></small>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="date">Fecha <span class="text-danger">*</span></label>
-            <input type="date" name="date" id="date" class="form-control" required
-                   value="{{ old('date', isset($attendance) ? $attendance->date->format('Y-m-d') : now()->format('Y-m-d')) }}">
-            <small class="text-muted">Seleccione la fecha de asistencia</small>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="time">Hora <span class="text-danger">*</span></label>
-            <input type="time" name="time" id="time" class="form-control" required
-                   value="{{ old('time', isset($attendance) ? $attendance->time : now()->format('H:i')) }}">
-            <small class="text-muted">Seleccione la hora de registro</small>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="schedule_id">Turno <span class="text-danger">*</span></label>
-            <select name="schedule_id" id="schedule_id" class="form-control" required>
-                <option value="">Seleccione un turno</option>
-                @foreach($schedules as $s)
-                    <option value="{{ $s->id }}"
-                        {{ old('schedule_id', isset($attendance) ? $attendance->schedule_id : ($currentSchedule ? $currentSchedule->id : '')) == $s->id ? 'selected' : '' }}>
-                        {{ $s->name }} ({{ $s->time_start }} - {{ $s->time_end }})
+<div class="row d-flex align-items-stretch">
+    {{-- Columna Izquierda: Datos del Formulario --}}
+    <div class="col-md-7 d-flex flex-column justify-content-between">
+        
+        {{-- Personal --}}
+        <div class="form-group mb-3">
+            {!! Form::label('user_id', 'Personal / Empleado *', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider']) !!}
+            <select name="user_id" id="user_id" class="form-control rounded-xl select2" required style="width: 100%;">
+                <option value="">-- Seleccione un Empleado --</option>
+                @foreach($users as $u)
+                    <option value="{{ $u->id }}" {{ (isset($attendance) && $attendance->user_id == $u->id) ? 'selected' : '' }}>
+                        {{ $u->dni }} - {{ $u->name }}
                     </option>
                 @endforeach
             </select>
-            <small class="text-muted">Turno asignado automáticamente según la hora actual</small>
+        </div>
+
+        {{-- CONTENEDOR DINÁMICO: Tarjeta de Historial e Información del Empleado --}}
+        <div id="attendance_history_box" class="mb-3" style="display: none;">
+            <div class="p-3 border rounded-xl shadow-sm" style="background-color: #e8f4fd; border-color: #bce0fd !important;">
+                <div class="row text-secondary mb-2" style="font-size: 0.85rem;">
+                    <div class="col-6">
+                        <i class="fas fa-user text-primary mr-1"></i> <span class="font-weight-bold text-primary">Nombre completo:</span> <span id="hist_name">...</span>
+                    </div>
+                    <div class="col-6">
+                        <i class="fas fa-id-card text-primary mr-1"></i> <span class="font-weight-bold text-primary">DNI:</span> <span id="hist_dni">...</span>
+                    </div>
+                </div>
+                <div class="row text-secondary mb-2" style="font-size: 0.85rem;">
+                    <div class="col-6">
+                        <i class="fas fa-envelope text-primary mr-1"></i> <span class="font-weight-bold text-primary">Email:</span> <span id="hist_email">...</span>
+                    </div>
+                    <div class="col-6">
+                        <i class="fas fa-phone text-primary mr-1"></i> <span class="font-weight-bold text-primary">Teléfono:</span> <span id="hist_phone">...</span>
+                    </div>
+                </div>
+                
+                {{-- Bloque de Registros del Día --}}
+                <div class="border-top pt-2 mt-2" style="border-color: #bce0fd !important;">
+                    <span class="text-xs font-weight-bold text-secondary uppercase tracking-wider d-block mb-1">
+                        <i class="fas fa-history text-primary mr-1"></i> Registros del día:
+                    </span>
+                    <p id="hist_logs_text" class="text-muted m-0 mb-2" style="font-size: 0.85rem;">Cargando historial...</p>
+                    
+                    {{-- Alerta dinámica de sugerencia --}}
+                    <div id="hist_suggestion_badge" class="alert alert-warning text-dark font-weight-bold m-0 p-2 text-xs rounded-xl d-flex align-items-center">
+                        <i class="fas fa-info-circle mr-2 text-dark"></i> <span id="hist_suggestion_text">Calculando siguiente marcación...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            {{-- Fecha --}}
+            <div class="col-md-6 form-group mb-3">
+                {!! Form::label('date', 'Fecha de Registro *', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider']) !!}
+                {!! Form::date('date', isset($attendance) ? $attendance->date->format('Y-m-d') : $now->format('Y-m-d'), [
+                    'class' => 'form-control rounded-xl',
+                    'id' => 'date',
+                    'required'
+                ]) !!}
+            </div>
+
+            {{-- Hora --}}
+            <div class="col-md-6 form-group mb-3">
+                {!! Form::label('time', 'Hora de Registro *', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider']) !!}
+                {!! Form::time('time', isset($attendance) ? substr($attendance->time, 0, 5) : $now->format('H:i'), [
+                    'class' => 'form-control rounded-xl',
+                    'id' => 'time',
+                    'required'
+                ]) !!}
+            </div>
+        </div>
+
+        {{-- Estado --}}
+        <div class="form-group mb-3">
+            {!! Form::label('status', 'Estado del Personal *', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider']) !!}
+            {!! Form::select('status', ['Presente' => 'Presente', 'Ausente' => 'Ausente'], null, [
+                'class' => 'form-control rounded-xl custom-select-fix',
+                'id' => 'status',
+                'required'
+            ]) !!}
+        </div>
+        
+        {{-- Notas --}}
+        <div class="form-group mb-3 mb-md-0">
+            {!! Form::label('notes', 'Notas Adicionales', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider']) !!}
+            {!! Form::textarea('notes', null, [
+                'class' => 'form-control rounded-xl',
+                'placeholder' => 'Ej: Reemplazo por descanso médico, retraso por tráfico, etc...',
+                'rows' => '2'
+            ]) !!}
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-6">
-    <div class="form-group">
-        <label for="type">Tipo <span class="text-danger">*</span></label>
-        {{-- Campo hidden que sí se envía --}}
-        <input type="hidden" name="type" id="type_hidden">
-        {{-- Select solo visual, no se envía --}}
-        <select id="type_display" class="form-control" style="pointer-events: none; background-color: #e9ecef;">
-            <option id="type_option_entrada" value="Entrada">Entrada</option>
-            <option id="type_option_salida"  value="Salida">Salida</option>
-        </select>
-        <small class="text-muted" id="type-hint">
-            <i class="fas fa-info-circle mr-1"></i> Se determina automáticamente
-        </small>
-    </div>
-</div>
-    <div class="col-md-6">
-        <div class="form-group">
-            <label for="status">Estado <span class="text-danger">*</span></label>
-            <select name="status" id="status" class="form-control" required>
-                <option value="Presente" {{ old('status', isset($attendance) ? $attendance->status : 'Presente') == 'Presente' ? 'selected' : '' }}>Presente</option>
-                <option value="Ausente"  {{ old('status', isset($attendance) ? $attendance->status : '') == 'Ausente' ? 'selected' : '' }}>Ausente</option>
-            </select>
-            <small class="text-muted">Estado de la asistencia</small>
+    {{-- Columna Derecha: Automatizaciones Visuales y Alternador --}}
+    <div class="col-md-5 text-center d-flex flex-column justify-content-center align-items-center border-left pl-md-4">
+        
+        {{-- Bloque de Turno Detectado --}}
+        <div class="w-100 mb-4">
+            {!! Form::label('schedule_text', 'Turno Detectado', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider d-block mb-2']) !!}
+            {!! Form::text('schedule_text', isset($attendance) && $attendance->schedule ? $attendance->schedule->name : 'Calculando...', [
+                'class' => 'form-control rounded-xl bg-light text-center font-weight-bold border-0 shadow-sm text-secondary',
+                'id' => 'schedule_text',
+                'readonly'
+            ]) !!}
+            <input type="hidden" name="schedule_id" id="schedule_id" value="{{ isset($attendance) ? $attendance->schedule_id : '' }}">
         </div>
+
+        {{-- Bloque de Tipo de Marcación (Pestañas en Editar / Badge en Crear) --}}
+        <div class="w-100">
+            {!! Form::label('type', 'Tipo de Marcación *', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider d-block mb-2']) !!}
+            
+            @if(isset($attendance))
+                {{-- MODO EDICIÓN --}}
+                <div class="btn-group btn-group-toggle w-100 shadow-sm rounded-xl overflow-hidden mb-1" data-toggle="buttons" style="height: 50px;">
+                    <label class="btn btn-outline-success font-weight-black d-flex align-items-center justify-content-center w-50 m-0 btn-type-toggle {{ $attendance->type == 'Entrada' ? 'active' : '' }}" style="font-size: 1rem; border-width: 2px;">
+                        {!! Form::radio('type', 'Entrada', null, ['id' => 'option_entrada', 'autocomplete' => 'off', 'required']) !!} 
+                        <i class="fas fa-sign-in-alt mr-2"></i> ENTRADA
+                    </label>
+                    <label class="btn btn-outline-info font-weight-black d-flex align-items-center justify-content-center w-50 m-0 btn-type-toggle {{ $attendance->type == 'Salida' ? 'active' : '' }}" style="font-size: 1rem; border-width: 2px;">
+                        {!! Form::radio('type', 'Salida', null, ['id' => 'option_salida', 'autocomplete' => 'off', 'required']) !!} 
+                        <i class="fas fa-sign-out-alt mr-2"></i> SALIDA
+                    </label>
+                </div>
+                <small class="text-muted text-xs d-block mt-2">Haz clic para alternar libremente el tipo de registro.</small>
+            @else
+                {{-- MODO CREACIÓN --}}
+                {!! Form::hidden('type', null, ['id' => 'type_hidden']) !!}
+                <div id="type_badge" class="alert alert-secondary text-center rounded-xl shadow-sm font-weight-black m-0 d-flex align-items-center justify-content-center" style="height: 50px; font-size: 1.15rem; letter-spacing: 0.05em; transition: all 0.3s ease;">
+                    AUTOMÁTICO
+                </div>
+                <small class="text-muted text-xs d-block mt-2">Determinado por el servidor según el histórico diario.</small>
+            @endif
+        </div>
+
     </div>
 </div>
 
-<div class="form-group">
-    <label for="notes">Notas</label>
-    <textarea name="notes" id="notes" class="form-control" rows="3"
-              placeholder="Agregue notas adicionales sobre la asistencia...">{{ old('notes', isset($attendance) ? $attendance->notes : '') }}</textarea>
-    <small class="text-muted">Observaciones o comentarios sobre el registro</small>
-</div>
-
-<script>
-$(document).ready(function () {
-
-    // Select2
-    $('.select2-employee').select2({
-        placeholder: 'Buscar por nombre, apellido o DNI...',
-        allowClear: true,
-        minimumInputLength: 2,
-        language: {
-            inputTooShort: function () { return 'Escriba al menos 2 letras...'; },
-            noResults:     function () { return 'No se encontraron resultados'; }
-        },
-        dropdownParent: $('#AttendanceModal')
-    });
-
-    // ── Auto-detectar turno según hora ────────────────────────────────────────
-    $('#time').on('change', function () {
-        var time = $(this).val();
-        if (!time) return;
-
-        $.get('/attendance/schedule-by-time', { time: time }, function (schedule) {
-            if (schedule) {
-                $('#schedule_id').val(schedule.id).trigger('change');
-            } else {
-                $('#schedule_id').val('');
-                mostrarAlerta('warning', 'No se encontró un turno para la hora seleccionada.');
-            }
-        });
-    });
-
-    // ── Al cambiar empleado → info + tipo ─────────────────────────────────────
-    $('#user_id').on('change', function () {
-        var userId = $(this).val();
-
-        if (!userId) {
-            $('#employee-info').addClass('d-none');
-            return;
-        }
-
-        // Info del empleado
-        $.get('/attendance/user-info', { user_id: userId }, function (data) {
-            if (data) {
-                $('#info-name').text(data.name);
-                $('#info-dni').text(data.dni);
-                $('#info-email').text(data.email);
-                $('#info-phone').text(data.phone);
-                $('#employee-info').removeClass('d-none');
-            }
-        });
-
-        actualizarTipo();
-    });
-
-    // ── Al cambiar fecha o turno → recalcular tipo ────────────────────────────
-    $('#date, #schedule_id').on('change', function () {
-        if ($('#user_id').val()) actualizarTipo();
-    });
-
-    // ── Función principal: detecta tipo automáticamente ───────────────────────
-    function actualizarTipo() {
-        var userId     = $('#user_id').val();
-        var date       = $('#date').val();
-        var scheduleId = $('#schedule_id').val();
-
-        if (!userId || !date || !scheduleId) return;
-
-        $.get('/attendance/type', {
-            user_id:     userId,
-            date:        date,
-            schedule_id: scheduleId
-        }, function (data) {
-
-            // Establecer tipo automáticamente y deshabilitar el select
-            $('#type_hidden').val(data.type);
-            $('#type_display').val(data.type);
-
-            // Mostrar hint
-            var hintClass = data.type === 'Entrada' ? 'text-success' : 'text-info';
-            $('#type-hint').html(
-                '<i class="fas fa-info-circle mr-1"></i> ' + data.mensaje
-            ).removeClass('text-success text-info text-warning').addClass(hintClass);
-
-            // Registros del día
-            if (data.registros && data.registros.length > 0) {
-                var html = '<ul class="list-unstyled mb-0">';
-                data.registros.forEach(function (r) {
-                    var badge = r.type === 'Entrada' ? 'success' : 'info';
-                    html += `<li>
-                        <span class="badge badge-${badge} mr-1">${r.type}</span>
-                        <strong>${r.time}</strong>
-                        <small class="text-muted ml-1">${r.schedule}</small>
-                    </li>`;
-                });
-                html += '</ul>';
-                $('#registros-dia').html(html);
-                $('#primer-registro-alert').addClass('d-none');
-            } else {
-                $('#registros-dia').html('<small class="text-muted">No hay registros para este día.</small>');
-                if (data.type === 'Entrada') {
-                    $('#primer-registro-alert').removeClass('d-none');
-                }
-            }
-        });
-    }
-
-    function mostrarAlerta(tipo, mensaje) {
-        $('#type-hint').html(
-            '<i class="fas fa-exclamation-triangle mr-1"></i> ' + mensaje
-        ).removeClass('text-success text-info text-warning').addClass('text-' + tipo);
-    }
-
-    // Si es edición, disparar el change para mostrar info
-    var userId = $('#user_id').val();
-    if (userId) {
-        $('#user_id').trigger('change');
-    }
-
+<style>
+    .rounded-xl { border-radius: 10px !important; }
+    .text-xs { font-size: 0.75rem; }
+    .tracking-wider { letter-spacing: 0.06em; }
+    .font-weight-black { font-weight: 900 !important; }
     
-
-});
-</script>
+    /* SOLUCIÓN AL TEXTO OCULTO EN SELECTS: Restablece el padding y fuerza la altura de línea */
+    .custom-select-fix {
+        height: calc(2.5rem + 2px) !important;
+        padding: 0.375rem 1rem !important;
+        line-height: 1.5 !important;
+    }
+    
+    .btn-group-toggle .btn input[type="radio"] { position: absolute; clip: rect(0,0,0,0); pointer-events: none; }
+    .btn-outline-success.active { background-color: #28a745 !important; color: #ffffff !important; }
+    .btn-outline-info.active { background-color: #17a2b8 !important; color: #ffffff !important; }
+</style>

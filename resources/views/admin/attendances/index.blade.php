@@ -81,40 +81,24 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="{{ asset('custom-crud.css') }}">
-
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css" rel="stylesheet">
+    <link class="styles-master" rel="stylesheet" href="{{ asset('custom-crud.css') }}">
     <style>
-    #AttendanceModal select.form-control,
-    #AttendanceModal .select2-selection--single {
-        height: auto !important;
-        min-height: 38px !important;
-        padding: 6px 12px !important;
-        line-height: 1.5 !important;
-    }
-
-    #AttendanceModal .select2-selection--single {
-        padding: 4px 8px !important;
-    }
-
-    #AttendanceModal .select2-selection__rendered {
-        line-height: 28px !important;
-    }
-
-    #AttendanceModal .select2-selection__arrow {
-        height: 36px !important;
-    }
-</style>
+        #AttendanceModal .select2-container--bootstrap4 .select2-selection--single { height: 38px !important; }
+        #AttendanceModal .select2-container { z-index: 1060 !important; }
+    </style>
 @endsection
 
 @section('js')
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 var table;
 
 $(document).ready(function () {
-
     table = $('#tblAttendances').DataTable({
         processing: true,
         serverSide: true,
@@ -136,20 +120,12 @@ $(document).ready(function () {
             { data: 'notes',         className: 'align-middle', defaultContent: '<i class="text-muted">-</i>' },
             { data: 'actions',       className: 'text-center align-middle text-nowrap', orderable: false, searchable: false },
         ],
-        language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.10.16/i18n/Spanish.json',
-        },
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.10.16/i18n/Spanish.json' },
     });
 
-    // Filtros
-    $('#btn-filter').click(function () {
-        table.ajax.reload();
-    });
-
+    $('#btn-filter').click(function () { table.ajax.reload(); });
     $('#btn-clear').click(function () {
-        $('#filter_start').val('');
-        $('#filter_end').val('');
-        $('#filter_employee').val('');
+        $('#filter_start').val(''); $('#filter_end').val(''); $('#filter_employee').val('');
         table.ajax.reload();
     });
 
@@ -215,11 +191,10 @@ $(document).ready(function () {
             }
         });
     });
-
 });
 
 function bindFormSubmit() {
-    $('#AttendanceModal form').on('submit', function (e) {
+    $('#AttendanceModal form').off('submit').on('submit', function (e) {
         e.preventDefault();
         var form = $(this);
         $.ajax({
@@ -229,18 +204,16 @@ function bindFormSubmit() {
             success: function (res) {
                 $('#AttendanceModal').modal('hide');
                 refreshTable();
-                Swal.fire('¡Registro Exitoso!', res.message, 'success');
+                Swal.fire('¡Proceso Exitoso!', res.message, 'success');
             },
             error: function (xhr) {
                 var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Ocurrió un error.';
-                Swal.fire('Error de Validación', msg, 'error');
+                Swal.fire('Error', msg, 'error');
             }
         });
     });
 }
 
-function refreshTable() {
-    table.ajax.reload(null, false);
-}
+function refreshTable() { table.ajax.reload(null, false); }
 </script>
 @endsection
