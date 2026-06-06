@@ -6,7 +6,7 @@
 <div class="container-fluid pt-4 pb-4 content-crud animate-fade-in">
     <div class="card border-0 shadow-sm custom-crud-card">
         <div class="card-header custom-crud-header d-flex align-items-center justify-content-between py-3">
-            <h4 class="mb-0 font-weight-black text-white"><i class="fas fa-umbrella-beach mr-2"></i> Gestión de Vacaciones del Personal</h4>
+            <h4 class="mb-0 font-weight-black text-white"><i class="fas fa-umbrella-beach mr-2"></i> Listado de vacaciones del personal</h4>
             <button type="button" class="btn btn-action-add font-weight-bold px-3.5 py-2 shadow-sm ml-auto" id="btn-nueva-vacacion">
                 <i class="fas fa-plus mr-1.5"></i> Nueva Solicitud
             </button>
