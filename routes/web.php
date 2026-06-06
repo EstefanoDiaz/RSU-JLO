@@ -10,6 +10,8 @@ use App\Http\Controllers\admin\UserTypeController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\admin\VehicleController;
 use App\Http\Controllers\admin\ContractController;
+use App\Http\Controllers\admin\ScheduleController;
+use App\Http\Controllers\admin\AttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,4 +67,14 @@ Route::middleware([
 
     Route::post('contract/{id}/toggle', [ContractController::class, 'toggle'])->name('admin.contract.toggle');
     Route::resource('contract', ContractController::class)->names('admin.contract');
+
+
+    // Turnos
+Route::resource('schedule', ScheduleController::class)->names('admin.schedule');
+
+// Asistencias
+Route::get('attendance/schedule-by-time', [AttendanceController::class, 'getScheduleByTime'])->name('admin.attendance.scheduleByTime');
+Route::get('attendance/type',             [AttendanceController::class, 'getAttendanceType'])->name('admin.attendance.type');
+Route::get('attendance/user-info',        [AttendanceController::class, 'getUserInfo'])->name('admin.attendance.userInfo');
+Route::resource('attendance', AttendanceController::class)->names('admin.attendance');
 });
