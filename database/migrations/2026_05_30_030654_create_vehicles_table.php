@@ -25,8 +25,8 @@ return new class extends Migration
 
             $table->foreign('brand_id')->references('id')->on('brands')->nullOnDelete();
             $table->foreign('model_id')->references('id')->on('brandmodels')->nullOnDelete();
-            $table->foreign('type_id')->references('id')->on('vehicletypes')->nullOnDelete();
-            $table->foreign('color_id')->references('id')->on('vehiclecolors')->nullOnDelete();
+            $table->foreign('type_id')->references('id')->on('vehicle_types')->nullOnDelete();
+            $table->foreign('color_id')->references('id')->on('vehicle_colors')->nullOnDelete();
         });
     }
 

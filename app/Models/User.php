@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; 
+
 
 class User extends Authenticatable
 {
@@ -27,6 +29,14 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'dni',          // Agregado para permitir registro masivo
+        'birthdate',    // Agregado para permitir registro masivo
+        'license',      // Agregado para permitir registro masivo
+        'address',      // Agregado para permitir registro masivo
+        'usertype_id',  // Agregado para vincular el tipo de usuario
+        'zone_id',      // Agregado para vincular la zona (si aplica)
+        'profile_photo_path',
+        'status',
     ];
 
     /**
@@ -48,6 +58,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'birthdate' => 'date', // Convierte automáticamente la fecha a un objeto Carbon de PHP
     ];
 
     /**
@@ -58,4 +69,14 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    /**
+     * RELACIÓN: Un usuario pertenece a un Tipo de Usuario
+     * Esto te permitirá hacer cosas como: $user->userType->name
+     */
+    public function userType(): BelongsTo
+    {
+        // Vinculamos con la clase correspondiente indicando la llave foránea de la migración
+        return $this->belongsTo(UserType::class, 'usertype_id');
+    }
 }
