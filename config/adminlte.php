@@ -391,7 +391,7 @@ return [
             [
                 'text' => 'Zonas',
                 'icon' => 'fas fa-fw fa-map-marked-alt',
-                'url'  => 'programacion/zonas',
+                'route'  => 'admin.zone.index',
             ],
             [
                 'text' => 'Feriados',
