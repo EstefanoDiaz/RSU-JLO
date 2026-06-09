@@ -78,7 +78,10 @@ class AttendanceController extends Controller
 
     public function create()
     {
-        $users     = User::select('id', 'name', 'dni')->orderBy('name')->get();
+        $users = User::select('id', 'name', 'dni')
+        ->whereHas('contracts') 
+        ->orderBy('name')
+        ->get();
         $schedules = Schedule::orderBy('time_start')->get();
         $now       = Carbon::now();
         $currentSchedule = $this->detectSchedule($now->format('H:i'));
