@@ -87,6 +87,7 @@ Route::middleware([
     Route::resource('admin/vacation', VacationController::class)->names('admin.vacation');
     Route::post('admin/vacation/{id}/approve', [VacationController::class, 'approve'])->name('admin.vacation.approve');
     Route::post('admin/vacation/{id}/reject', [VacationController::class, 'reject'])->name('admin.vacation.reject');
+    Route::get('admin/vacation-check-live', [VacationController::class, 'checkLive'])->name('admin.vacation.checkLive');
 
     //RUTA ZONAS
     Route::resource('admin/zone', ZoneController::class)->names('admin.zone');

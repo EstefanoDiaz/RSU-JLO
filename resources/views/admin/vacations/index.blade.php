@@ -52,7 +52,6 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="{{ asset('custom-crud.css') }}">
 @endsection
-
 @section('js')
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
@@ -60,7 +59,6 @@
 
     <script>
         $(document).ready(function() {
-            // Inicializar DataTable asíncrono cruzado
             $('#tblVacations').DataTable({
                 processing: true,
                 serverSide: true,
@@ -80,7 +78,7 @@
                 language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
             });
 
-            // ACCIÓN: ABRIR MODAL CREAR
+            // ACCIÓN: ABRIR MODAL CREAR VACACIÓN
             $('#btn-nueva-vacacion').click(function() {
                 $.ajax({
                     url: "{{ route('admin.vacation.create') }}",
@@ -90,7 +88,8 @@
                         $('#VacationModal .modal-body').html(response);
                         $('#VacationModal').modal("show");
 
-                        $('#VacationModal form').on("submit", function(e) {
+                        // Desvinculamos bindeos previos redundantes para evitar duplicados
+                        $('#VacationModal form').off("submit").on("submit", function(e) {
                             e.preventDefault();
                             $.ajax({
                                 url: $(this).attr('action'),
@@ -111,12 +110,12 @@
             });
         });
 
-        // ACCIÓN: BOTÓN CHECK (APROBAR)
+        // ACCIÓN: BOTÓN APROBAR (CHECK)
         $(document).on('click', '.btn-aprobar', function() {
             let id = $(this).attr('id');
             Swal.fire({
                 title: '¿Aprobar solicitud de vacaciones?',
-                text: "Los días de descanso solicitados se restaran a los días disponibles de vacaciones del usuario.",
+                text: "Los días de descanso solicitados se deducirán del saldo de días disponibles del usuario.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#071D38',
@@ -134,12 +133,12 @@
             });
         });
 
-        // ACCIÓN: BOTÓN CANCELADO (RECHAZAR)
+        // ACCIÓN: BOTÓN RECHAZAR (CANCELADO)
         $(document).on('click', '.btn-rechazar', function() {
             let id = $(this).attr('id');
             Swal.fire({
                 title: '¿Rechazar solicitud de vacaciones?',
-                text: "La solicitud cambiará a estado RECHAZADA. Los días disponibles de vaciones del usuario se mantendrá intacto.",
+                text: "La solicitud cambiará a estado RECHAZADA. El saldo de días disponibles del usuario se mantendrá intacto.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#a13825',
@@ -156,7 +155,7 @@
             });
         });
 
-        // ACCIÓN: BOTÓN EDITAR
+        // ACCIÓN: BOTÓN EDITAR SOLICITUD PENDIENTE
         $(document).on('click', '.btn-editar', function() {
             let id = $(this).attr('id');
             $.ajax({
@@ -167,7 +166,7 @@
                     $('#VacationModal .modal-body').html(response);
                     $('#VacationModal').modal("show");
 
-                    $('#VacationModal form').on("submit", function(e) {
+                    $('#VacationModal form').off("submit").on("submit", function(e) {
                         e.preventDefault();
                         $.ajax({
                             url: $(this).attr('action'),
@@ -185,7 +184,7 @@
             });
         });
 
-        // ACCIÓN: BOTÓN ELIMINAR
+        // ACCIÓN: BOTÓN ELIMINAR SOLICITUD
         $(document).on('submit', '.frmEliminar', function(e) {
             e.preventDefault();
             let form = $(this);
