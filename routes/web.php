@@ -16,6 +16,8 @@ use App\Http\Controllers\admin\VacationController;
 use App\Http\Controllers\admin\ZoneController;
 use App\Http\Controllers\Admin\ProvinceController;
 use App\Http\Controllers\Admin\DistrictController;
+use App\Http\Controllers\admin\PersonalGroupController;
+use App\Http\Controllers\admin\AssignmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -98,5 +100,14 @@ Route::middleware([
     // Rutas para los combobox encadenados
     Route::get('locations/departments/{id}/provinces', [ProvinceController::class, 'getProvinces'])->name('admin.locations.provinces');
     Route::get('locations/provinces/{id}/districts', [DistrictController::class, 'getDistricts'])->name('admin.locations.districts');
+
+    // GRUPOS DE PERSONAL
+    Route::get('programacion/grupos/{id}/data', [PersonalGroupController::class, 'getGroupData'])->name('admin.personal-group.data');
+    Route::resource('programacion/grupos', PersonalGroupController::class)->except('show')->names('admin.personal-group');
+
+    // ASSIGNMENTS (PROGRAMACIONES)
+    Route::post('admin/assignment/validar-disponibilidad', [AssignmentController::class, 'validateAvailability'])->name('admin.assignment.validate');
+    Route::post('admin/assignment/{id}/finalizar', [AssignmentController::class, 'finalize'])->name('admin.assignment.finalize');
+    Route::resource('admin/assignment', AssignmentController::class)->names('admin.assignment');
 
 });
