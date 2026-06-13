@@ -396,7 +396,7 @@ return [
             [
                 'text' => 'Feriados',
                 'icon' => 'fas fa-fw fa-calendar-times',
-                'url'  => 'programacion/feriados',
+                'route'  => 'admin.holiday.index',
             ],
             [
                 'text' => 'Grupos de Personal',

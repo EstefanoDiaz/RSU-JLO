@@ -16,6 +16,7 @@ use App\Http\Controllers\admin\VacationController;
 use App\Http\Controllers\admin\ZoneController;
 use App\Http\Controllers\Admin\ProvinceController;
 use App\Http\Controllers\Admin\DistrictController;
+use App\Http\Controllers\admin\HolidayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,7 +69,6 @@ Route::middleware([
     Route::resource('vehicle', VehicleController::class)->names('admin.vehicle');
 
 
-
     Route::post('contract/{id}/toggle', [ContractController::class, 'toggle'])->name('admin.contract.toggle');
     Route::resource('contract', ContractController::class)->names('admin.contract');
 
@@ -99,4 +99,6 @@ Route::middleware([
     Route::get('locations/departments/{id}/provinces', [ProvinceController::class, 'getProvinces'])->name('admin.locations.provinces');
     Route::get('locations/provinces/{id}/districts', [DistrictController::class, 'getDistricts'])->name('admin.locations.districts');
 
+    // Ruta Feriados
+    Route::resource('admin/holiday', HolidayController::class)->names('admin.holiday');
 });
