@@ -16,6 +16,7 @@ use App\Http\Controllers\admin\VacationController;
 use App\Http\Controllers\admin\ZoneController;
 use App\Http\Controllers\Admin\ProvinceController;
 use App\Http\Controllers\Admin\DistrictController;
+use App\Http\Controllers\admin\HolidayController;
 use App\Http\Controllers\admin\PersonalGroupController;
 use App\Http\Controllers\admin\AssignmentController;
 
@@ -70,7 +71,6 @@ Route::middleware([
     Route::resource('vehicle', VehicleController::class)->names('admin.vehicle');
 
 
-
     Route::post('contract/{id}/toggle', [ContractController::class, 'toggle'])->name('admin.contract.toggle');
     Route::resource('contract', ContractController::class)->names('admin.contract');
 
@@ -101,6 +101,8 @@ Route::middleware([
     Route::get('locations/departments/{id}/provinces', [ProvinceController::class, 'getProvinces'])->name('admin.locations.provinces');
     Route::get('locations/provinces/{id}/districts', [DistrictController::class, 'getDistricts'])->name('admin.locations.districts');
 
+    // Ruta Feriados
+    Route::resource('admin/holiday', HolidayController::class)->names('admin.holiday');
     // GRUPOS DE PERSONAL
     Route::get('programacion/grupos/{id}/data', [PersonalGroupController::class, 'getGroupData'])->name('admin.personal-group.data');
     Route::resource('programacion/grupos', PersonalGroupController::class)->except('show')->names('admin.personal-group');
