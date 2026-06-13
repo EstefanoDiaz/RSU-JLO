@@ -42,7 +42,7 @@
                     </div>
                     <div class="ml-3">
                         <small class="text-white-50 text-uppercase font-weight-bold text-xs tracking-wider d-block mb-1">Vehículos Totales</small>
-                        <h3 class="font-weight-black text-white mb-0">24</h3>
+                        <h3 class="font-weight-black text-white mb-0">{{ number_format($totalVehicles) }}</h3>
                     </div>
                 </div>
             </div>
@@ -55,8 +55,8 @@
                         <i class="fas fa-users-cog"></i>
                     </div>
                     <div class="ml-3">
-                        <small class="text-muted text-uppercase font-weight-bold text-xs tracking-wider d-block mb-1">Personal Activo</small>
-                        <h3 class="font-weight-black text-dark-blue mb-0">142</h3>
+                        <small class="text-muted text-uppercase font-weight-bold text-xs tracking-wider d-block mb-1">Personal Activos</small>
+                        <h3 class="font-weight-black text-dark-blue mb-0">{{ number_format($totalPersonal) }}</h3>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     </div>
                     <div class="ml-3">
                         <small class="text-white-50 text-uppercase font-weight-bold text-xs tracking-wider d-block mb-1">Rutas Programadas</small>
-                        <h3 class="font-weight-black text-white mb-0">18</h3>
+                        <h3 class="font-weight-black text-white mb-0">{{ number_format($totalZones) }}</h3>
                     </div>
                 </div>
             </div>
@@ -145,42 +145,59 @@
                     </div>
                 </div>
                 <div class="card-body pt-1">
-                    <div class="row">
+                   <div class="row">
                         <div class="col-sm-4 col-6 mb-3">
-                            <div class="module-shortcut-card">
-                                <div class="shortcut-icon text-indigo bg-indigo-soft"><i class="fas fa-users-cog"></i></div>
-                                <span class="shortcut-title">Personal</span>
-                            </div>
+                            <a href="{{ route('admin.user.index') }}" class="shortcut-link">
+                                <div class="module-shortcut-card">
+                                    <div class="shortcut-icon text-indigo bg-indigo-soft"><i class="fas fa-users-cog"></i></div>
+                                    <span class="shortcut-title">Personal</span>
+                                </div>
+                            </a>
                         </div>
+
                         <div class="col-sm-4 col-6 mb-3">
-                            <div class="module-shortcut-card">
-                                <div class="shortcut-icon text-primary bg-primary-soft"><i class="fas fa-truck"></i></div>
-                                <span class="shortcut-title">Vehículos</span>
-                            </div>
+                            <a href="{{ route('admin.vehicle.index') }}" class="shortcut-link">
+                                <div class="module-shortcut-card">
+                                    <div class="shortcut-icon text-primary bg-primary-soft"><i class="fas fa-truck"></i></div>
+                                    <span class="shortcut-title">Vehículos</span>
+                                </div>
+                            </a>
                         </div>
+
                         <div class="col-sm-4 col-6 mb-3">
-                            <div class="module-shortcut-card">
-                                <div class="shortcut-icon text-warning bg-warning-soft"><i class="fas fa-map-marked-alt"></i></div>
-                                <span class="shortcut-title">Rutas</span>
-                            </div>
+                            <a href="{{ route('admin.zone.index') }}" class="shortcut-link">
+                                <div class="module-shortcut-card">
+                                    <div class="shortcut-icon text-warning bg-warning-soft"><i class="fas fa-map-marked-alt"></i></div>
+                                    <span class="shortcut-title">Rutas</span>
+                                </div>
+                            </a>
                         </div>
+
                         <div class="col-sm-4 col-6 mb-3 mb-sm-0">
-                            <div class="module-shortcut-card">
-                                <div class="shortcut-icon text-success bg-success-soft"><i class="fas fa-user-clock"></i></div>
-                                <span class="shortcut-title">Asistencia</span>
-                            </div>
+                            <a href="{{ route('admin.attendance.index') }}" class="shortcut-link">
+                                <div class="module-shortcut-card">
+                                    <div class="shortcut-icon text-success bg-success-soft"><i class="fas fa-user-clock"></i></div>
+                                    <span class="shortcut-title">Asistencia</span>
+                                </div>
+                            </a>
                         </div>
+
                         <div class="col-sm-4 col-6 mb-3 mb-sm-0">
-                            <div class="module-shortcut-card">
-                                <div class="shortcut-icon text-danger bg-danger-soft"><i class="fas fa-file-signature"></i></div>
-                                <span class="shortcut-title">Contratos</span>
-                            </div>
+                            <a href="{{ route('admin.contract.index') }}" class="shortcut-link">
+                                <div class="module-shortcut-card">
+                                    <div class="shortcut-icon text-danger bg-danger-soft"><i class="fas fa-file-signature"></i></div>
+                                    <span class="shortcut-title">Contratos</span>
+                                </div>
+                            </a>
                         </div>
+
                         <div class="col-sm-4 col-6">
-                            <div class="module-shortcut-card">
-                                <div class="shortcut-icon text-purple bg-purple-soft"><i class="fas fa-umbrella-beach"></i></div>
-                                <span class="shortcut-title">Vacaciones</span>
-                            </div>
+                            <a href="{{ route('admin.vacation.index') }}" class="shortcut-link">
+                                <div class="module-shortcut-card">
+                                    <div class="shortcut-icon text-purple bg-purple-soft"><i class="fas fa-umbrella-beach"></i></div>
+                                    <span class="shortcut-title">Vacaciones</span>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
