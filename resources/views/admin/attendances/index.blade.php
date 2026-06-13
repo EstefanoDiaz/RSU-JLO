@@ -7,7 +7,7 @@
     <div class="card border-0 shadow-sm custom-crud-card">
         <div class="card-header custom-crud-header d-flex align-items-center justify-content-between py-3">
             <h4 class="mb-0 font-weight-black text-white">
-                <i class="fas fa-user-check mr-2"></i> Listado de Asistencias
+                <i class="fas fa-user-check mr-2"></i> Lista de Asistencias
             </h4>
             <button type="button" class="btn btn-action-add font-weight-bold px-3 py-2 shadow-sm ml-auto" id="btn-nuevo">
                 <i class="fas fa-plus mr-1"></i> Agregar nueva asistencia
