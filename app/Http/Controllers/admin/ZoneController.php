@@ -62,7 +62,7 @@ class ZoneController extends Controller
                         . method_field('DELETE') . csrf_field() .
                         '<button class="btn btn-sm btn-danger" type="submit" title="Eliminar"><i class="fas fa-trash-alt"></i></button></form>';
                     $btnMap = '<button class="btn btn-sm btn-primary btn-mapa ml-1"
-                            id="'.$zone->id.'"
+                            id="' . $zone->id . '"
                             title="Ver Mapa">
                             <i class="fas fa-map"></i>
                         </button>';
@@ -241,25 +241,36 @@ class ZoneController extends Controller
     }
 
     // Método adicional para obtener zonas con coordenadas formateadas para el mapa
-    public function getZonesForMap()
+    public function getZonesForMap(Request $request)
     {
         try {
-            $zones = Zone::with('zonecoords')->where('status', 'ACTIVO')->get();
+            $query = Zone::with(['zonecoords', 'district']);
+
+            // Filtro opcional por distrito
+            if ($request->filled('district_id')) {
+                $query->where('district_id', $request->district_id);
+            }
+
+            $zones = $query->get();
 
             $formatted = $zones->map(function ($zone) {
                 return [
                     'id' => $zone->id,
                     'name' => $zone->name,
+                    'status' => $zone->status,
+                    'description' => $zone->description,
+                    'district_name' => $zone->district ? $zone->district->name : null,
                     'coords' => $zone->zonecoords->map(function ($coord) {
                         return [
                             (float) $coord->latitude,
-                            (float) $coord->longitude
+                            (float) $coord->longitude,
                         ];
-                    })->toArray()
+                    })->toArray(),
                 ];
             });
 
             return response()->json($formatted, 200);
+
         } catch (\Throwable $th) {
             return response()->json(['error' => $th->getMessage()], 500);
         }
@@ -267,15 +278,15 @@ class ZoneController extends Controller
 
 
     public function getSingleZoneMapDetails($id)
-{
-    try {
-        $zone = Zone::with(['zonecoords', 'district.province.department'])->findOrFail($id);        
-        // Retornamos la vista pasando los datos directamente
-        return view('admin.zones.formMapaId', compact('zone'));
+    {
+        try {
+            $zone = Zone::with(['zonecoords', 'district.province.department'])->findOrFail($id);
+            // Retornamos la vista pasando los datos directamente
+            return view('admin.zones.formMapaId', compact('zone'));
 
-    } catch (\Throwable $th) {
-        // En caso de error, redirige con un mensaje
-        return redirect()->back()->with('error', 'No se pudo cargar la zona.');
+        } catch (\Throwable $th) {
+            // En caso de error, redirige con un mensaje
+            return redirect()->back()->with('error', 'No se pudo cargar la zona.');
+        }
     }
-}
 }
