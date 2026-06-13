@@ -63,9 +63,9 @@ return [
     |
     */
 
-    'logo' => '<b>Gestión</b> RSU',
-    'logo_img' => 'images/logoJLO.png',
-    'logo_img_class' => 'brand-image img-circle elevation-3 bg-white p-1',
+    'logo' => '',
+    'logo_img' => 'images/logoBlanco.png',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => 'Logo RSU JLO',
@@ -238,7 +238,7 @@ return [
 
     'right_sidebar' => false,
     'right_sidebar_icon' => 'fas fa-cogs',
-    'right_sidebar_theme' => 'dark',
+    'right_sidebar_theme' => 'light',
     'right_sidebar_slide' => true,
     'right_sidebar_push' => true,
     'right_sidebar_scrollbar_theme' => 'os-theme-light',
@@ -299,77 +299,129 @@ return [
     */
 
     'menu' => [
-        // Navbar widgets principales
-        [
-            'type' => 'fullscreen-widget',
-            'topnav_right' => true,
-        ],
+    [
+        'type' => 'fullscreen-widget',
+        'topnav_right' => true,
+    ],
+    [
+        'type' => 'sidebar-menu-search',
+        'text' => 'Buscar...',
+    ],
 
-        // Buscador interno del menú lateral
-        [
-            'type' => 'sidebar-menu-search',
-            'text' => 'Buscar...',
-        ],
+    ['header' => 'MÓDULOS DEL SISTEMA'],
 
-        // Encabezado del menú personalizado para el proyecto RSU
-        ['header' => 'MÓDULOS DEL SISTEMA'],
-        [
-            'text'    => 'Gestión de Vehículos',
-            'icon'    => 'fas fa-fw fa-truck',
-            'submenu' => [
-                [
-                    'text' => 'Colores',
-                    'icon' => 'fas fa-fw fa-palette',
-                    'url'  => 'vehiculos/colores', // Cambia por tu ruta real
-                ],
-                [
-                    'text' => 'Marcas',
-                    'icon' => 'fas fa-fw fa-tags',
-                    'url'  => 'brand',
-                ],
-                [
-                    'text' => 'Modelos',
-                    'icon' => 'fas fa-fw fa-wrench',
-                    'url'  => 'vehiculos/modelos',
-                ],
-                [
-                    'text' => 'Tipo de Vehículos',
-                    'icon' => 'fas fa-fw fa-car',
-                    'url'  => 'vehiculos/tipos',
-                ],
-                [
-                    'text' => 'Vehículos',
-                    'icon' => 'fas fa-fw fa-truck-moving',
-                    'url'  => 'vehiculos/lista',
-                ],
-                [
-                    'text' => 'Mantenimientos',
-                    'icon' => 'fas fa-fw fa-tools',
-                    'url'  => 'vehiculos/mantenimientos',
-                ],
+    [
+        'text'    => 'Gestión de Vehículos',
+        'icon'    => 'fas fa-fw fa-truck',
+        'submenu' => [
+            [
+                'text'  => 'Colores',
+                'icon'  => 'fas fa-fw fa-palette',
+                'route' => 'admin.color.index',
+            ],
+            [
+                'text'  => 'Marcas',
+                'icon'  => 'fas fa-fw fa-tags',
+                'route' => 'admin.brand.index',
+            ],
+            [
+                'text'  => 'Modelos',
+                'icon'  => 'fas fa-fw fa-wrench',
+                'route' => 'admin.brandmodel.index',
+            ],
+            [
+                'text'  => 'Tipo de Vehículos',
+                'icon'  => 'fas fa-fw fa-car',
+                'route' => 'admin.tipo-vehiculo.index',
+            ],
+            [
+                'text'  => 'Vehículos',
+                'icon'  => 'fas fa-fw fa-truck-moving',
+                'route' => 'admin.vehicle.index',
+            ],
+            [
+                'text' => 'Mantenimientos',
+                'icon' => 'fas fa-fw fa-tools',
+                'url'  => 'vehiculos/mantenimientos',
             ],
         ],
-        [
-            'text' => 'Gestión de personal',
-            'url'  => 'personal',
-            'icon' => 'fas fa-fw fa-users',
-        ],
-        [
-            'text' => 'Programación',
-            'url'  => 'programacion',
-            'icon' => 'far fa-fw fa-calendar-alt',
-        ],
-        [
-            'text' => 'Gestión de cambios',
-            'url'  => 'cambios',
-            'icon' => 'fas fa-fw fa-exchange-alt',
-        ],
-        [
-            'text' => 'Gestión de usuarios',
-            'url'  => 'usuarios',
-            'icon' => 'fas fa-fw fa-user-cog',
+    ],
+
+    [
+        'text'    => 'Gestión de personal',
+        'icon'    => 'fas fa-fw fa-users-cog',
+        'submenu' => [
+            [
+                'text'  => 'Tipos de personal',
+                'icon'  => 'fas fa-fw fa-user-tag',
+                'route' => 'admin.usertype.index',
+            ],
+            [
+                'text'  => 'Personal',
+                'icon'  => 'fas fa-fw fa-user-tie',
+                'route' => 'admin.user.index',
+            ],
+            [
+                'text'  => 'Contratos',
+                'icon'  => 'fas fa-fw fa-file-contract',
+                'route' => 'admin.contract.index',
+            ],
+            [
+                'text'  => 'Asistencias',
+                'icon'  => 'fas fa-fw fa-calendar-check',
+                'route' => 'admin.attendance.index',  // ← corregido
+            ],
+            [
+                'text' => 'Vacaciones',
+                'icon' => 'fas fa-fw fa-plane',
+                'route'  => 'admin.vacation.index',
+            ],
         ],
     ],
+
+    [
+        'text'    => 'Programación',
+        'icon'    => 'far fa-fw fa-calendar-alt',
+        'submenu' => [
+            [
+                'text'  => 'Turnos',
+                'icon'  => 'fas fa-fw fa-clock',
+                'route' => 'admin.schedule.index',  // ← nuevo
+            ],
+            [
+                'text' => 'Zonas',
+                'icon' => 'fas fa-fw fa-map-marked-alt',
+                'route'  => 'admin.zone.index',
+            ],
+            [
+                'text' => 'Feriados',
+                'icon' => 'fas fa-fw fa-calendar-times',
+                'url'  => 'programacion/feriados',
+            ],
+            [
+                'text' => 'Grupos de Personal',
+                'icon' => 'fas fa-fw fa-users',
+                'url'  => 'programacion/grupos',
+            ],
+            [
+                'text' => 'Programación',
+                'icon' => 'fas fa-fw fa-calendar-alt',
+                'url'  => 'programacion',
+            ],
+        ],
+    ],
+
+    [
+        'text' => 'Gestión de cambios',
+        'url'  => 'cambios',
+        'icon' => 'fas fa-fw fa-exchange-alt',
+    ],
+    [
+        'text' => 'Gestión de usuarios',
+        'url'  => 'usuarios',
+        'icon' => 'fas fa-fw fa-user-cog',
+    ],
+],
 
     /*
     |--------------------------------------------------------------------------
@@ -473,6 +525,16 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'CustomCrud' => [
+            'active' => true, 
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true, 
+                    'location' => 'custom-crud.css', 
                 ],
             ],
         ],

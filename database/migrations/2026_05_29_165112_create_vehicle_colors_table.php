@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('brands', function (Blueprint $table) {
+        Schema::create('vehicle_colors', function (Blueprint $table) {
             $table->id();
-            $table->string('name',100);
+            $table->string('name', 100); 
+            $table->string('code', 50); 
             $table->text('description')->nullable();
-            $table->string('logo')->nullable();
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
-            
+            $table->timestamps();
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('brands');
+        Schema::dropIfExists('vehicle_colors');
     }
 };
