@@ -9,23 +9,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('personal_groups', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name');
-            $table->unsignedBigInteger('zone_id');
-            $table->unsignedBigInteger('schedule_id');
-            $table->unsignedBigInteger('vehicle_id');
-            $table->unsignedBigInteger('conductor_id');
-            $table->unsignedBigInteger('ayudante1_id');
-            $table->unsignedBigInteger('ayudante2_id')->nullable();
+            $table->id();
+            $table->string('name', 100);
+            $table->foreignId('schedule_id')->constrained('schedules')->onDelete('cascade');
+            $table->foreignId('zone_id')->constrained('zones')->onDelete('cascade');
+            $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
+            $table->foreignId('conductor_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('assistant1_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('assistant2_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->json('work_days'); // ["lun","mar","mie","jue","vie","sab","dom"]
             $table->enum('status', ['Activo', 'Inactivo'])->default('Activo');
             $table->timestamps();
-
-            $table->foreign('zone_id')->references('id')->on('zones')->cascadeOnDelete();
-            $table->foreign('schedule_id')->references('id')->on('schedules')->cascadeOnDelete();
-            $table->foreign('vehicle_id')->references('id')->on('vehicles')->cascadeOnDelete();
-            $table->foreign('conductor_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('ayudante1_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('ayudante2_id')->references('id')->on('users')->nullOnDelete();
         });
     }
 

@@ -346,39 +346,42 @@ return [
             ],
         ],
     ],
-
-    [
-        'text'    => 'Gestión de personal',
-        'icon'    => 'fas fa-fw fa-users-cog',
-        'submenu' => [
-            [
-                'text'  => 'Tipos de personal',
-                'icon'  => 'fas fa-fw fa-user-tag',
-                'route' => 'admin.usertype.index',
-            ],
-            [
-                'text'  => 'Personal',
-                'icon'  => 'fas fa-fw fa-user-tie',
-                'route' => 'admin.user.index',
-            ],
-            [
-                'text'  => 'Contratos',
-                'icon'  => 'fas fa-fw fa-file-contract',
-                'route' => 'admin.contract.index',
-            ],
-            [
-                'text'  => 'Asistencias',
-                'icon'  => 'fas fa-fw fa-calendar-check',
-                'route' => 'admin.attendance.index',  // ← corregido
-            ],
-            [
-                'text' => 'Vacaciones',
-                'icon' => 'fas fa-fw fa-plane',
-                'route'  => 'admin.vacation.index',
-            ],
+[
+    'text'    => 'Gestión de personal',
+    'icon'    => 'fas fa-fw fa-users-cog',
+    'submenu' => [
+        [
+            'text'  => 'Tipos de personal',
+            'icon'  => 'fas fa-fw fa-user-tag',
+            'route' => 'admin.usertype.index',
+        ],
+        [
+            'text'  => 'Personal',
+            'icon'  => 'fas fa-fw fa-user-tie',
+            'route' => 'admin.user.index',
+        ],
+        [
+            'text'  => 'Contratos',
+            'icon'  => 'fas fa-fw fa-file-contract',
+            'route' => 'admin.contract.index',
+        ],
+        [
+            'text'  => 'Asistencias',
+            'icon'  => 'fas fa-fw fa-calendar-check',
+            'route' => 'admin.attendance.index',
+        ],
+        [
+            'text'  => 'Vacaciones',
+            'icon'  => 'fas fa-fw fa-plane',
+            'route' => 'admin.vacation.index',
+        ],
+        [
+            'text'  => 'Grupos de Personal',
+            'icon'  => 'fas fa-fw fa-layer-group',
+            'route' => 'admin.personalgroup.index',
         ],
     ],
-
+],
     [
         'text'    => 'Programación',
         'icon'    => 'far fa-fw fa-calendar-alt',
