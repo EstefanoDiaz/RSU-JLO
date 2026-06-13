@@ -6,8 +6,8 @@
 <div class="container-fluid pt-4 pb-4 content-crud animate-fade-in">
     <div class="card border-0 shadow-sm custom-crud-card">
         <div class="card-header custom-crud-header d-flex align-items-center justify-content-between py-3">
-            <h4 class="mb-0 font-weight-black text-white"><i class="fas fa-umbrella-beach mr-2"></i> Listado de vacaciones del personal</h4>
-            <button type="button" class="btn btn-action-add font-weight-bold px-3.5 py-2 shadow-sm ml-auto" id="btn-nueva-vacacion">
+            <h4 class="mb-0 font-weight-black text-white"><i class="fas fa-umbrella-beach mr-2"></i> Lista de vacaciones del personal</h4>
+            <button type="button" class="btn btn-action-add font-weight-bold px-3.5 py-2 shadow-sm ml-auto text-white" style="background-color: #071D38; border-radius: 10px;" id="btn-nueva-vacacion">
                 <i class="fas fa-plus mr-1.5"></i> Nueva Solicitud
             </button>
         </div>
@@ -52,6 +52,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="{{ asset('custom-crud.css') }}">
 @endsection
+
 @section('js')
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
@@ -59,7 +60,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#tblVacations').DataTable({
+            let table = $('#tblVacations').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('admin.vacation.index') }}",
@@ -88,7 +89,6 @@
                         $('#VacationModal .modal-body').html(response);
                         $('#VacationModal').modal("show");
 
-                        // Desvinculamos bindeos previos redundantes para evitar duplicados
                         $('#VacationModal form').off("submit").on("submit", function(e) {
                             e.preventDefault();
                             $.ajax({
@@ -97,11 +97,42 @@
                                 data: $(this).serialize(),
                                 success: function(res) {
                                     $('#VacationModal').modal("hide");
-                                    refreshTable();
+                                    table.draw();
                                     Swal.fire('¡Registrado!', res.message, 'success');
                                 },
                                 error: function(xhr) {
                                     Swal.fire('Restricción', xhr.responseJSON.message || 'Error', 'error');
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+            // ACCIÓN: BOTÓN EDITAR SOLICITUD PENDIENTE (🎯 CORREGIDO CON ':id')
+            $(document).on('click', '.btn-editar', function() {
+                let id = $(this).attr('id');
+                $.ajax({
+                    url: "{{ route('admin.vacation.edit', ':id') }}".replace(':id', id),
+                    type: "GET",
+                    success: function(response) {
+                        $('#VacationModal #VacationModalTitle').html('<i class="fas fa-edit"></i> Modificar Solicitud');
+                        $('#VacationModal .modal-body').html(response);
+                        $('#VacationModal').modal("show");
+
+                        $('#VacationModal form').off("submit").on("submit", function(e) {
+                            e.preventDefault();
+                            $.ajax({
+                                url: $(this).attr('action'),
+                                type: 'POST',
+                                data: $(this).serialize(),
+                                success: function(res) {
+                                    $('#VacationModal').modal("hide");
+                                    table.draw();
+                                    Swal.fire('Actualizado', res.message, 'success');
+                                },
+                                error: function(xhr) { 
+                                    Swal.fire('Restricción', xhr.responseJSON.message || 'Error', 'error'); 
                                 }
                             });
                         });
@@ -126,14 +157,14 @@
                         url: "{{ url('admin/vacation') }}/" + id + "/approve",
                         type: "POST",
                         data: { _token: "{{ csrf_token() }}" },
-                        success: function(res) { refreshTable(); Swal.fire('Aprobado', res.message, 'success'); },
+                        success: function(res) { $('#tblVacations').DataTable().ajax.reload(null, false); Swal.fire('Aprobado', res.message, 'success'); },
                         error: function(xhr) { Swal.fire('Error', xhr.responseJSON.message, 'error'); }
                     });
                 }
             });
         });
 
-        // ACCIÓN: BOTÓN RECHAZAR (CANCELADO)
+        // ACCIÓN: BOTÓN RECHAZAR
         $(document).on('click', '.btn-rechazar', function() {
             let id = $(this).attr('id');
             Swal.fire({
@@ -149,36 +180,7 @@
                         url: "{{ url('admin/vacation') }}/" + id + "/reject",
                         type: "POST",
                         data: { _token: "{{ csrf_token() }}" },
-                        success: function(res) { refreshTable(); Swal.fire('Rechazado', res.message, 'success'); }
-                    });
-                }
-            });
-        });
-
-        // ACCIÓN: BOTÓN EDITAR SOLICITUD PENDIENTE
-        $(document).on('click', '.btn-editar', function() {
-            let id = $(this).attr('id');
-            $.ajax({
-                url: "{{ route('admin.vacation.edit', 'id') }}".replace('id', id),
-                type: "GET",
-                success: function(response) {
-                    $('#VacationModal #VacationModalTitle').html('<i class="fas fa-edit"></i> Modificar Solicitud');
-                    $('#VacationModal .modal-body').html(response);
-                    $('#VacationModal').modal("show");
-
-                    $('#VacationModal form').off("submit").on("submit", function(e) {
-                        e.preventDefault();
-                        $.ajax({
-                            url: $(this).attr('action'),
-                            type: 'POST',
-                            data: $(this).serialize(),
-                            success: function(res) {
-                                $('#VacationModal').modal("hide");
-                                refreshTable();
-                                Swal.fire('Actualizado', res.message, 'success');
-                            },
-                            error: function(xhr) { Swal.fire('Error', xhr.responseJSON.message, 'error'); }
-                        });
+                        success: function(res) { $('#tblVacations').DataTable().ajax.reload(null, false); Swal.fire('Rechazado', res.message, 'success'); }
                     });
                 }
             });
@@ -201,14 +203,10 @@
                         url: form.attr('action'),
                         type: 'POST',
                         data: form.serialize(),
-                        success: function(res) { refreshTable(); Swal.fire('Eliminado', res.message, 'success'); }
+                        success: function(res) { $('#tblVacations').DataTable().ajax.reload(null, false); Swal.fire('Eliminado', res.message, 'success'); }
                     });
                 }
             });
         });
-
-        function refreshTable() {
-            $('#tblVacations').DataTable().ajax.reload(null, false);
-        }
     </script>
 @endsection
