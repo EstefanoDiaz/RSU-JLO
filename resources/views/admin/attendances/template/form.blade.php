@@ -64,12 +64,13 @@
             {{-- Hora --}}
             <div class="col-md-6 form-group mb-3">
                 {!! Form::label('time', 'Hora de Registro *', ['class' => 'font-weight-bold text-xs uppercase text-secondary tracking-wider']) !!}
-                {!! Form::time('time', isset($attendance) ? substr($attendance->time, 0, 5) : $now->format('H:i'), [
+                {!! Form::time('time', isset($attendance) ? substr($attendance->time, 0, 5) : $now->setTimezone('America/Lima')->format('H:i'), [
                     'class' => 'form-control rounded-xl',
                     'id' => 'time',
                     'required'
                 ]) !!}
             </div>
+
         </div>
 
         {{-- Estado --}}
