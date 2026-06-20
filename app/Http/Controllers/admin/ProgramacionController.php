@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Feriado;
 use App\Models\Vehicle;
+use App\Models\Cambios;
 
 class ProgramacionController extends Controller
 {
@@ -330,11 +331,19 @@ class ProgramacionController extends Controller
             ->get(['id', 'name', 'code', 'occupant_capacity']);
         $cambios = $prog->cambios->sortByDesc('created_at');
 
+        // IDs de los motivos de cada categoría (según tu tabla)
+        $motivosTurno = Cambios::whereIn('id', [1, 2, 3, 4, 5])->orderBy('id')->get();
+        $motivosVehiculo = Cambios::whereIn('id', [6, 7, 8, 9, 5])->orderBy('id')->get();
+        $motivosPersonal = Cambios::whereIn('id', [10, 11, 12, 13, 5])->orderBy('id')->get();
+
         return view('admin.programaciones.template.form_edit', compact(
             'prog',
             'schedules',
             'vehicles',
-            'cambios'
+            'cambios',
+            'motivosTurno',
+            'motivosVehiculo',
+            'motivosPersonal'
         ));
     }
 
@@ -530,8 +539,8 @@ class ProgramacionController extends Controller
     {
         try {
             $prog = Programacion::findOrFail($id);
-            if ($prog->status !== 'Programado') {
-                return response()->json(['message' => 'Solo se pueden eliminar programaciones en estado Programado.'], 422);
+            if (!in_array($prog->status, ['Programado', 'Reprogramado'])) {
+                return response()->json(['message' => 'Solo se pueden eliminar programaciones en estado Programado o Reprogramado.'], 422);
             }
             $prog->delete();
             return response()->json(['message' => 'Programación eliminada correctamente.'], 200);
@@ -547,7 +556,7 @@ class ProgramacionController extends Controller
     {
         try {
             $prog = Programacion::findOrFail($id);
-            if ($prog->status !== 'Programado') {
+            if (!in_array($prog->status, ['Programado', 'Reprogramado'])) {
                 return response()->json(['message' => 'La programación ya fue finalizada o cancelada.'], 422);
             }
             $prog->update(['status' => 'Finalizado']);

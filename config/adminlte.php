@@ -311,6 +311,12 @@ return [
         ['header' => 'MÓDULOS DEL SISTEMA'],
 
         [
+            'text' => 'Dashboard',
+            'url' => 'admin/monitoreo',
+            'icon' => 'fas fa-fw fa-tachometer-alt',
+        ],
+
+        [
             'text' => 'Gestión de Vehículos',
             'icon' => 'fas fa-fw fa-truck',
             'submenu' => [

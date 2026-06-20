@@ -15,6 +15,8 @@ class ProgramacionCambio extends Model
         'valor_anterior',
         'valor_nuevo',
         'motivo',
+        'cambio_masivo_id',
+        'revertido',
     ];
 
     public function programacion()
@@ -28,7 +30,7 @@ class ProgramacionCambio extends Model
     }
 
     public function cambioMasivo()
-{
-    return $this->belongsTo(CambioMasivo::class, 'cambio_masivo_id');
-}
+    {
+        return $this->belongsTo(CambioMasivo::class, 'cambio_masivo_id');
+    }
 }
