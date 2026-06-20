@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // 1. Desactivar restricciones para poder borrar las tablas sin que MySQL proteste
+        Schema::disableForeignKeyConstraints();
+
         // Drop pivot table first if exists
         Schema::dropIfExists('personal_group_users');
         Schema::dropIfExists('personal_groups');
@@ -35,11 +38,19 @@ return new class extends Migration
             // A user can only appear once per group
             $table->unique(['personal_group_id', 'user_id']);
         });
+
+        // 2. Volver a activar las restricciones una vez creadas las tablas
+        Schema::enableForeignKeyConstraints();
     }
 
     public function down(): void
     {
+        // También las desactivas aquí por seguridad al hacer rollback
+        Schema::disableForeignKeyConstraints();
+
         Schema::dropIfExists('personal_group_users');
         Schema::dropIfExists('personal_groups');
+
+        Schema::enableForeignKeyConstraints();
     }
 };

@@ -8,6 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // 1. Apagar restricciones para que MySQL no bloquee los DROPS
+        Schema::disableForeignKeyConstraints();
+
+        // 2. Limpiar CUALQUIER rastro de tablas de programaciones anteriores
+        Schema::dropIfExists('programacion_cambios');
+        Schema::dropIfExists('programacion_ayudantes');
+        Schema::dropIfExists('assignments'); // <── Borramos el renombre antiguo
+        Schema::dropIfExists('programaciones'); // <── Borramos la original
+
         // ── Tabla principal ────────────────────────────────────
         Schema::create('programaciones', function (Blueprint $table) {
             $table->id();
@@ -44,12 +53,19 @@ return new class extends Migration
             $table->text('motivo')->nullable();
             $table->timestamps();
         });
+
+        // 3. Volver a encender las restricciones
+        Schema::enableForeignKeyConstraints();
     }
 
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
+
         Schema::dropIfExists('programacion_cambios');
         Schema::dropIfExists('programacion_ayudantes');
         Schema::dropIfExists('programaciones');
+
+        Schema::enableForeignKeyConstraints();
     }
 };
