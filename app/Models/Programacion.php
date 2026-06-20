@@ -12,25 +12,26 @@ class Programacion extends Model
     protected $table = 'programaciones';
 
     protected $fillable = [
-        'group_id',
-        'date',
+        'batch_id',
+        'personal_group_id',
         'zone_id',
         'schedule_id',
         'vehicle_id',
         'conductor_id',
-        'ayudante1_id',
-        'ayudante2_id',
+        'fecha',
+        'observaciones',
         'status',
-        'observations',
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'fecha' => 'date',
     ];
+
+    // ── Relationships ──────────────────────────────────────────
 
     public function group()
     {
-        return $this->belongsTo(PersonalGroup::class, 'group_id');
+        return $this->belongsTo(PersonalGroup::class, 'personal_group_id');
     }
 
     public function zone()
@@ -53,13 +54,16 @@ class Programacion extends Model
         return $this->belongsTo(User::class, 'conductor_id');
     }
 
-    public function ayudante1()
+    public function ayudantes()
     {
-        return $this->belongsTo(User::class, 'ayudante1_id');
+        return $this->belongsToMany(User::class, 'programacion_ayudante', 'programacion_id', 'user_id')
+                    ->withPivot('order')
+                    ->withTimestamps()
+                    ->orderByPivot('order');
     }
 
-    public function ayudante2()
+    public function cambios()
     {
-        return $this->belongsTo(User::class, 'ayudante2_id');
+        return $this->hasMany(ProgramacionCambio::class, 'programacion_id');
     }
 }

@@ -18,7 +18,10 @@ use App\Http\Controllers\Admin\ProvinceController;
 use App\Http\Controllers\Admin\DistrictController;
 use App\Http\Controllers\admin\HolidayController;
 use App\Http\Controllers\admin\PersonalGroupController;
-use App\Http\Controllers\admin\AssignmentController;
+use App\Http\Controllers\admin\ProgramacionController;
+use App\Http\Controllers\admin\CambioController;
+use App\Http\Controllers\admin\CambioMasivoController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -95,7 +98,7 @@ Route::middleware([
     Route::resource('admin/zone', ZoneController::class)->names('admin.zone');
     // Ruta para obtener los datos de las zonas en formato GeoJSON para el mapa
     Route::get('zones/map-data', [ZoneController::class, 'getZonesForMap'])->name('admin.zone.mapdata');
-     // Ruta para obtener los detalles de una zona específica para mostrar en el mapa
+    // Ruta para obtener los detalles de una zona específica para mostrar en el mapa
     Route::get('zones/{id}/map-details', [ZoneController::class, 'getSingleZoneMapDetails'])->name('admin.zones.mapDetails');
     // Rutas para los combobox encadenados
     Route::get('locations/departments/{id}/provinces', [ProvinceController::class, 'getProvinces'])->name('admin.locations.provinces');
@@ -103,13 +106,106 @@ Route::middleware([
 
     // Ruta Feriados
     Route::resource('admin/holiday', HolidayController::class)->names('admin.holiday');
-    // GRUPOS DE PERSONAL
-    Route::get('programacion/grupos/{id}/data', [PersonalGroupController::class, 'getGroupData'])->name('admin.personal-group.data');
-    Route::resource('programacion/grupos', PersonalGroupController::class)->except('show')->names('admin.personal-group');
 
-    // ASSIGNMENTS (PROGRAMACIONES)
-    Route::post('admin/assignment/validar-disponibilidad', [AssignmentController::class, 'validateAvailability'])->name('admin.assignment.validate');
-    Route::post('admin/assignment/{id}/finalizar', [AssignmentController::class, 'finalize'])->name('admin.assignment.finalize');
-    Route::resource('admin/assignment', AssignmentController::class)->names('admin.assignment');
+    // GRUPOS DE PERSONAL
+    // Rutas específicas primero
+    Route::get('programacion/grupos/search-users', [PersonalGroupController::class, 'searchUsers'])
+        ->name('admin.personal-group.search-users');
+
+    Route::get('programacion/grupos/vehicle-info/{id}', [PersonalGroupController::class, 'vehicleInfo'])
+        ->name('admin.personal-group.vehicle-info');
+
+    Route::get('programacion/grupos/{id}/data', [PersonalGroupController::class, 'getGroupData'])
+        ->name('admin.personal-group.data');
+
+    // Resource al final
+    Route::resource('programacion/grupos', PersonalGroupController::class)
+        ->except('show')
+        ->names('admin.personal-group');
+
+
+
+
+
+    // ── PROGRAMACIONES ─────────────────────────────────────────────────────────
+    // IMPORTANTE: las rutas estáticas deben ir ANTES del Route::resource
+    // para evitar que Laravel interprete 'validate', 'search-users', etc. como {programacion}
+
+    Route::post(
+        'admin/programacion/validate',
+        [ProgramacionController::class, 'validateAvailability']
+    )->name('admin.programacion.validate');
+
+    Route::get(
+        'admin/programacion/search-users',
+        [ProgramacionController::class, 'searchUsers']
+    )->name('admin.programacion.search-users');
+
+    Route::post(
+        'admin/programacion/{id}/finalizar',
+        [ProgramacionController::class, 'finalize']
+    )->name('admin.programacion.finalize');
+
+    Route::get(
+        'admin/programacion/{id}/historial',
+        [ProgramacionController::class, 'historial']
+    )->name('admin.programacion.historial');
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // RUTAS A AGREGAR — pegar ANTES del Route::resource de programacion
+    // ══════════════════════════════════════════════════════════════════════════════
+
+    // Programación Masiva
+    Route::get(
+        'admin/programacion/masivo/create',
+        [ProgramacionController::class, 'createMasivo']
+    )->name('admin.programacion.create-masivo');
+
+    Route::post(
+        'admin/programacion/masivo/store',
+        [ProgramacionController::class, 'storeMasivo']
+    )->name('admin.programacion.store-masivo');
+
+    Route::post(
+        'admin/programacion/masivo/validate',
+        [ProgramacionController::class, 'validateMasivo']
+    )->name('admin.programacion.validate-masivo');
+
+    Route::get(
+        'admin/programacion/feriados',
+        [ProgramacionController::class, 'getFeriados']
+    )->name('admin.programacion.feriados');
+
+    // Resource (genera index, create, store, edit, update, destroy)
+    Route::resource('admin/programacion', ProgramacionController::class)
+        ->except('show')
+        ->names('admin.programacion');
+
+    // Show aparte porque devuelve JSON (no vista)
+    Route::get(
+        'admin/programacion/{programacion}',
+        [ProgramacionController::class, 'show']
+    )->name('admin.programacion.show');
+
+
+
+
+    // ── MOTIVOS DE CAMBIO ──────────────────────────────────────────────────────
+    Route::resource('admin/cambio', CambioController::class)
+        ->except('show')
+        ->names('admin.cambio');
+
+
+
+
+
+    // CAMBIOS MASIVOS
+    Route::get('admin/cambios-masivos/create-form', [CambioMasivoController::class, 'createForm'])->name('admin.cambios-masivos.create-form');
+    Route::get('admin/cambios-masivos/search-users', [CambioMasivoController::class, 'searchUsers'])->name('admin.cambios-masivos.search-users');
+    Route::get('admin/cambios-masivos/personas-rango', [CambioMasivoController::class, 'getPersonasEnRango'])->name('admin.cambios-masivos.personas-rango');
+    Route::get('admin/cambios-masivos/recursos-rango', [CambioMasivoController::class, 'getRecursosEnRango'])->name('admin.cambios-masivos.recursos-rango');
+    Route::post('admin/cambios-masivos/{id}/revertir', [CambioMasivoController::class, 'revertFila'])->name('admin.cambios-masivos.revertir');
+    Route::resource('admin/cambios-masivos', CambioMasivoController::class)->only(['index', 'show', 'store'])->names('admin.cambios-masivos');
+
 
 });

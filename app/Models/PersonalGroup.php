@@ -16,11 +16,15 @@ class PersonalGroup extends Model
         'zone_id',
         'schedule_id',
         'vehicle_id',
-        'conductor_id',
-        'ayudante1_id',
-        'ayudante2_id',
+        'days',
         'status',
     ];
+
+    protected $casts = [
+        'days' => 'array',
+    ];
+
+    // ── Relationships ──────────────────────────────────────────
 
     public function zone()
     {
@@ -37,18 +41,41 @@ class PersonalGroup extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
+    /**
+     * All members (conductor + ayudantes) via pivot.
+     */
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'personal_group_users', 'personal_group_id', 'user_id')
+                    ->withPivot('role', 'order')
+                    ->withTimestamps()
+                    ->orderByPivot('order');
+    }
+
     public function conductor()
     {
-        return $this->belongsTo(User::class, 'conductor_id');
+        return $this->belongsToMany(User::class, 'personal_group_users', 'personal_group_id', 'user_id')
+                    ->withPivot('role', 'order')
+                    ->wherePivot('role', 'conductor');
     }
 
-    public function ayudante1()
+    public function ayudantes()
     {
-        return $this->belongsTo(User::class, 'ayudante1_id');
+        return $this->belongsToMany(User::class, 'personal_group_users', 'personal_group_id', 'user_id')
+                    ->withPivot('role', 'order')
+                    ->wherePivot('role', 'ayudante')
+                    ->orderByPivot('order');
     }
 
-    public function ayudante2()
+    // ── Helpers ────────────────────────────────────────────────
+
+    public function getConductorUserAttribute(): ?User
     {
-        return $this->belongsTo(User::class, 'ayudante2_id');
+        return $this->conductor()->first();
+    }
+
+    public function getDaysLabelAttribute(): string
+    {
+        return implode(', ', $this->days ?? []);
     }
 }
