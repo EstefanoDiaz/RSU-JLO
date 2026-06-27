@@ -21,6 +21,8 @@ use App\Http\Controllers\admin\PersonalGroupController;
 use App\Http\Controllers\admin\ProgramacionController;
 use App\Http\Controllers\admin\CambioController;
 use App\Http\Controllers\admin\CambioMasivoController;
+use App\Http\Controllers\admin\MaintenanceController;
+use App\Http\Controllers\admin\MaintenanceScheduleController;
 
 
 /*
@@ -208,4 +210,16 @@ Route::middleware([
     Route::resource('admin/cambios-masivos', CambioMasivoController::class)->only(['index', 'show', 'store'])->names('admin.cambios-masivos');
 
 
-});
+    //PRACTICA INDIVIDUAL - MANTENIMIENTO
+    Route::get('maintenance/{maintenance}/schedules', [MaintenanceScheduleController::class, 'index'])->name('admin.maintenance.schedules.index');
+    Route::get('maintenance/{maintenance}/schedules/create', [MaintenanceScheduleController::class, 'create'])->name('admin.maintenance.schedules.create');
+    Route::post('maintenance/{maintenance}/schedules', [MaintenanceScheduleController::class, 'store'])->name('admin.maintenance.schedules.store');
+    Route::get('maintenance-schedules/{schedule}/edit', [MaintenanceScheduleController::class, 'edit'])->name('admin.schedules.edit');
+    Route::put('maintenance-schedules/{schedule}', [MaintenanceScheduleController::class, 'update'])->name('admin.schedules.update');
+    Route::delete('maintenance-schedules/{schedule}', [MaintenanceScheduleController::class, 'destroy'])->name('admin.schedules.destroy');
+    Route::get('maintenance-schedules/{schedule}/days', [MaintenanceScheduleController::class, 'getDays'])->name('admin.schedules.days');
+
+    Route::resource('maintenance', MaintenanceController::class)->names('admin.maintenance');
+
+    Route::post('maintenance-schedules/detail/{id}', [MaintenanceScheduleController::class, 'updateDayDetail'])->name('admin.schedules.updateDayDetail');
+    });
