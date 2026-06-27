@@ -299,52 +299,60 @@ return [
     */
 
     'menu' => [
-    [
-        'type' => 'fullscreen-widget',
-        'topnav_right' => true,
-    ],
-    [
-        'type' => 'sidebar-menu-search',
-        'text' => 'Buscar...',
-    ],
+        [
+            'type' => 'fullscreen-widget',
+            'topnav_right' => true,
+        ],
+        [
+            'type' => 'sidebar-menu-search',
+            'text' => 'Buscar...',
+        ],
 
-    ['header' => 'MÓDULOS DEL SISTEMA'],
+        ['header' => 'MÓDULOS DEL SISTEMA'],
 
-    [
-        'text'    => 'Gestión de Vehículos',
-        'icon'    => 'fas fa-fw fa-truck',
-        'submenu' => [
-            [
-                'text'  => 'Colores',
-                'icon'  => 'fas fa-fw fa-palette',
-                'route' => 'admin.color.index',
-            ],
-            [
-                'text'  => 'Marcas',
-                'icon'  => 'fas fa-fw fa-tags',
-                'route' => 'admin.brand.index',
-            ],
-            [
-                'text'  => 'Modelos',
-                'icon'  => 'fas fa-fw fa-wrench',
-                'route' => 'admin.brandmodel.index',
-            ],
-            [
-                'text'  => 'Tipo de Vehículos',
-                'icon'  => 'fas fa-fw fa-car',
-                'route' => 'admin.tipo-vehiculo.index',
-            ],
-            [
-                'text'  => 'Vehículos',
-                'icon'  => 'fas fa-fw fa-truck-moving',
-                'route' => 'admin.vehicle.index',
-            ],
-            [
-                'text' => 'Mantenimientos',
-                'icon' => 'fas fa-fw fa-tools',
-                'url'  => 'vehiculos/mantenimientos',
+        [
+            'text' => 'Dashboard',
+            'url' => 'admin/monitoreo',
+            'icon' => 'fas fa-fw fa-tachometer-alt',
+        ],
+
+        [
+            'text' => 'Gestión de Vehículos',
+            'icon' => 'fas fa-fw fa-truck',
+            'submenu' => [
+                [
+                    'text' => 'Colores',
+                    'icon' => 'fas fa-fw fa-palette',
+                    'route' => 'admin.color.index',
+                ],
+                [
+                    'text' => 'Marcas',
+                    'icon' => 'fas fa-fw fa-tags',
+                    'route' => 'admin.brand.index',
+                ],
+                [
+                    'text' => 'Modelos',
+                    'icon' => 'fas fa-fw fa-wrench',
+                    'route' => 'admin.brandmodel.index',
+                ],
+                [
+                    'text' => 'Tipo de Vehículos',
+                    'icon' => 'fas fa-fw fa-car',
+                    'route' => 'admin.tipo-vehiculo.index',
+                ],
+                [
+                    'text' => 'Vehículos',
+                    'icon' => 'fas fa-fw fa-truck-moving',
+                    'route' => 'admin.vehicle.index',
+                ],
+                [
+                    'text' => 'Mantenimientos',
+                    'icon' => 'fas fa-fw fa-tools',
+                    'url' => 'vehiculos/mantenimientos',
+                ],
             ],
         ],
+<<<<<<< HEAD
     ],
 [
     'text'    => 'Gestión de personal',
@@ -410,21 +418,95 @@ return [
                 'text'  => 'Programación',
                 'icon'  => 'fas fa-fw fa-calendar-alt',
                 'route' => 'admin.assignment.index',
+=======
+
+        [
+            'text' => 'Gestión de personal',
+            'icon' => 'fas fa-fw fa-users-cog',
+            'submenu' => [
+                [
+                    'text' => 'Tipos de personal',
+                    'icon' => 'fas fa-fw fa-user-tag',
+                    'route' => 'admin.usertype.index',
+                ],
+                [
+                    'text' => 'Personal',
+                    'icon' => 'fas fa-fw fa-user-tie',
+                    'route' => 'admin.user.index',
+                ],
+                [
+                    'text' => 'Contratos',
+                    'icon' => 'fas fa-fw fa-file-contract',
+                    'route' => 'admin.contract.index',
+                ],
+                [
+                    'text' => 'Asistencias',
+                    'icon' => 'fas fa-fw fa-calendar-check',
+                    'route' => 'admin.attendance.index',
+                ],
+                [
+                    'text' => 'Vacaciones',
+                    'icon' => 'fas fa-fw fa-plane',
+                    'route' => 'admin.vacation.index',
+                ],
             ],
         ],
-    ],
 
-    [
-        'text' => 'Gestión de cambios',
-        'url'  => 'cambios',
-        'icon' => 'fas fa-fw fa-exchange-alt',
+        [
+            'text' => 'Programación',
+            'icon' => 'far fa-fw fa-calendar-alt',
+            'submenu' => [
+                [
+                    'text' => 'Turnos',
+                    'icon' => 'fas fa-fw fa-clock',
+                    'route' => 'admin.schedule.index',
+                ],
+                [
+                    'text' => 'Zonas',
+                    'icon' => 'fas fa-fw fa-map-marked-alt',
+                    'route' => 'admin.zone.index',
+                ],
+                [
+                    'text' => 'Feriados',
+                    'icon' => 'fas fa-fw fa-calendar-times',
+                    'route' => 'admin.holiday.index',
+                ],
+                [
+                    'text' => 'Grupos de Personal',
+                    'icon' => 'fas fa-fw fa-users',
+                    'route' => 'admin.personal-group.index',
+                ],
+                [
+                    'text' => 'Programación',
+                    'icon' => 'fas fa-fw fa-calendar-alt',
+                    'route' => 'admin.programacion.index',
+                ],
+>>>>>>> origin/cristian
+            ],
+        ],
+
+        [
+            'text' => 'Gestión de cambios',
+            'icon' => 'fas fa-fw fa-exchange-alt',
+            'submenu' => [
+                [
+                    'text' => 'Motivos',
+                    'icon' => 'fas fa-fw fa-clock',
+                    'route' => 'admin.cambio.index',
+                ],
+                [
+                    'text' => 'Cambios',
+                    'icon' => 'fas fa-fw fa-map-marked-alt',
+                    'route' => 'admin.cambios-masivos.index',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Gestión de usuarios',
+            'url' => 'usuarios',
+            'icon' => 'fas fa-fw fa-user-cog',
+        ],
     ],
-    [
-        'text' => 'Gestión de usuarios',
-        'url'  => 'usuarios',
-        'icon' => 'fas fa-fw fa-user-cog',
-    ],
-],
 
     /*
     |--------------------------------------------------------------------------
@@ -532,12 +614,12 @@ return [
             ],
         ],
         'CustomCrud' => [
-            'active' => true, 
+            'active' => true,
             'files' => [
                 [
                     'type' => 'css',
-                    'asset' => true, 
-                    'location' => 'custom-crud.css', 
+                    'asset' => true,
+                    'location' => 'custom-crud.css',
                 ],
             ],
         ],
