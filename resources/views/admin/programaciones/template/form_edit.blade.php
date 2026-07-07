@@ -1,40 +1,4 @@
-{{--
-    form_edit.blade.php
-    Edición de una programación puntual (una fecha).
-    Permite cambiar: turno, vehículo y/o personal de forma independiente,
-    cada uno con motivo predefinido + texto libre.
-    El status pasa a "Reprogramado" al guardar.
---}}
-
-@php
-    $motivosTurno = [
-        'Cambio de turno por requerimiento operativo',
-        'Falla en el turno original',
-        'Solicitud del personal',
-        'Optimización de rutas',
-        'Otro',
-    ];
-    $motivosVehiculo = [
-        'Falla mecánica del vehículo actual',
-        'Vehículo en mantenimiento preventivo',
-        'Vehículo en mantenimiento correctivo',
-        'Capacidad insuficiente',
-        'Otro',
-    ];
-    $motivosPersonal = [
-        'Enfermedad del conductor/ayudante',
-        'Inasistencia injustificada',
-        'Vacaciones de emergencia',
-        'Reasignación por requerimiento operativo',
-        'Otro',
-    ];
-@endphp
-
-<form
-    action="{{ route('admin.programacion.update', $prog->id) }}"
-    method="POST"
-    id="formProgramacion"
->
+<form action="{{ route('admin.programacion.update', $prog->id) }}" method="POST" id="formProgramacion">
     @csrf
     @method('PUT')
 
@@ -54,7 +18,8 @@
             <strong>{{ optional($prog->group)->name ?? '-' }}</strong>
         </div>
         <div class="col-3 text-center">
-            <small class="text-muted d-block text-uppercase font-weight-bold" style="font-size:10px;">Estado actual</small>
+            <small class="text-muted d-block text-uppercase font-weight-bold" style="font-size:10px;">Estado
+                actual</small>
             @if($prog->status === 'Reprogramado')
                 <span class="badge px-2 py-1" style="background:#8B5CF6;color:#fff;border-radius:20px;">
                     <i class="fas fa-sync-alt mr-1"></i>Reprogramado
@@ -70,9 +35,10 @@
     {{-- ── SECCIÓN 1: Turno ─────────────────────────────────── --}}
     <div class="cambio-section card border mb-3" id="section-turno">
         <div class="card-header d-flex align-items-center justify-content-between py-2"
-             style="background:#F8FAFC;cursor:pointer;" data-toggle-section="turno">
+            style="background:#F8FAFC;cursor:pointer;" data-toggle-section="turno">
             <div class="d-flex align-items-center">
-                <div class="section-icon mr-3" style="width:32px;height:32px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;">
+                <div class="section-icon mr-3"
+                    style="width:32px;height:32px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;">
                     <i class="fas fa-clock" style="color:#4F46E5;font-size:.85rem;"></i>
                 </div>
                 <div>
@@ -90,7 +56,8 @@
                     </span>
                 </div>
                 <div class="custom-control custom-switch mb-0">
-                    <input type="checkbox" class="custom-control-input section-toggle" id="toggle-turno" data-section="turno">
+                    <input type="checkbox" class="custom-control-input section-toggle" id="toggle-turno"
+                        data-section="turno">
                     <label class="custom-control-label" for="toggle-turno"></label>
                 </div>
             </div>
@@ -103,8 +70,7 @@
                     <select name="schedule_id" class="form-control" id="select-nuevo-turno">
                         <option value="">-- Seleccione turno --</option>
                         @foreach($schedules as $schedule)
-                            <option value="{{ $schedule->id }}"
-                                {{ $prog->schedule_id == $schedule->id ? 'disabled style="color:#aaa"' : '' }}>
+                            <option value="{{ $schedule->id }}" {{ $prog->schedule_id == $schedule->id ? 'disabled style="color:#aaa"' : '' }}>
                                 {{ $schedule->name }} ({{ $schedule->time_start }} — {{ $schedule->time_end }})
                                 {{ $prog->schedule_id == $schedule->id ? '← actual' : '' }}
                             </option>
@@ -116,7 +82,7 @@
                     <select name="motivo_turno_predefinido" class="form-control">
                         <option value="">-- Seleccione motivo --</option>
                         @foreach($motivosTurno as $m)
-                            <option value="{{ $m }}">{{ $m }}</option>
+                            <option value="{{ $m->name }}">{{ $m->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -124,7 +90,7 @@
             <div class="form-group mb-0">
                 <label class="font-weight-bold text-xs text-secondary text-uppercase">Detalle del motivo</label>
                 <textarea name="motivo_turno_detalle" class="form-control" rows="2"
-                          placeholder="Descripción adicional del cambio de turno..."></textarea>
+                    placeholder="Descripción adicional del cambio de turno..."></textarea>
             </div>
         </div>
     </div>
@@ -132,9 +98,10 @@
     {{-- ── SECCIÓN 2: Vehículo ──────────────────────────────── --}}
     <div class="cambio-section card border mb-3" id="section-vehiculo">
         <div class="card-header d-flex align-items-center justify-content-between py-2"
-             style="background:#F8FAFC;cursor:pointer;" data-toggle-section="vehiculo">
+            style="background:#F8FAFC;cursor:pointer;" data-toggle-section="vehiculo">
             <div class="d-flex align-items-center">
-                <div class="section-icon mr-3" style="width:32px;height:32px;border-radius:50%;background:#ECFDF5;display:flex;align-items:center;justify-content:center;">
+                <div class="section-icon mr-3"
+                    style="width:32px;height:32px;border-radius:50%;background:#ECFDF5;display:flex;align-items:center;justify-content:center;">
                     <i class="fas fa-truck" style="color:#059669;font-size:.85rem;"></i>
                 </div>
                 <div>
@@ -152,7 +119,8 @@
                     </span>
                 </div>
                 <div class="custom-control custom-switch mb-0">
-                    <input type="checkbox" class="custom-control-input section-toggle" id="toggle-vehiculo" data-section="vehiculo">
+                    <input type="checkbox" class="custom-control-input section-toggle" id="toggle-vehiculo"
+                        data-section="vehiculo">
                     <label class="custom-control-label" for="toggle-vehiculo"></label>
                 </div>
             </div>
@@ -165,8 +133,7 @@
                     <select name="vehicle_id" class="form-control" id="select-nuevo-vehiculo">
                         <option value="">-- Seleccione vehículo --</option>
                         @foreach($vehicles as $v)
-                            <option value="{{ $v->id }}"
-                                {{ $prog->vehicle_id == $v->id ? 'disabled style="color:#aaa"' : '' }}>
+                            <option value="{{ $v->id }}" {{ $prog->vehicle_id == $v->id ? 'disabled style="color:#aaa"' : '' }}>
                                 {{ $v->code }} — {{ $v->name }} (Cap. {{ $v->occupant_capacity }})
                                 {{ $prog->vehicle_id == $v->id ? '← actual' : '' }}
                             </option>
@@ -178,7 +145,7 @@
                     <select name="motivo_vehiculo_predefinido" class="form-control">
                         <option value="">-- Seleccione motivo --</option>
                         @foreach($motivosVehiculo as $m)
-                            <option value="{{ $m }}">{{ $m }}</option>
+                            <option value="{{ $m->name }}">{{ $m->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -186,7 +153,7 @@
             <div class="form-group mb-0">
                 <label class="font-weight-bold text-xs text-secondary text-uppercase">Detalle del motivo</label>
                 <textarea name="motivo_vehiculo_detalle" class="form-control" rows="2"
-                          placeholder="Descripción adicional del cambio de vehículo..."></textarea>
+                    placeholder="Descripción adicional del cambio de vehículo..."></textarea>
             </div>
         </div>
     </div>
@@ -194,9 +161,10 @@
     {{-- ── SECCIÓN 3: Personal ──────────────────────────────── --}}
     <div class="cambio-section card border mb-3" id="section-personal">
         <div class="card-header d-flex align-items-center justify-content-between py-2"
-             style="background:#F8FAFC;cursor:pointer;" data-toggle-section="personal">
+            style="background:#F8FAFC;cursor:pointer;" data-toggle-section="personal">
             <div class="d-flex align-items-center">
-                <div class="section-icon mr-3" style="width:32px;height:32px;border-radius:50%;background:#FFF7ED;display:flex;align-items:center;justify-content:center;">
+                <div class="section-icon mr-3"
+                    style="width:32px;height:32px;border-radius:50%;background:#FFF7ED;display:flex;align-items:center;justify-content:center;">
                     <i class="fas fa-users" style="color:#EA580C;font-size:.85rem;"></i>
                 </div>
                 <div>
@@ -216,7 +184,8 @@
                     </span>
                 </div>
                 <div class="custom-control custom-switch mb-0">
-                    <input type="checkbox" class="custom-control-input section-toggle" id="toggle-personal" data-section="personal">
+                    <input type="checkbox" class="custom-control-input section-toggle" id="toggle-personal"
+                        data-section="personal">
                     <label class="custom-control-label" for="toggle-personal"></label>
                 </div>
             </div>
@@ -231,7 +200,7 @@
                 <div class="d-flex align-items-center mb-1" style="gap:.5rem;">
                     <div class="flex-grow-1">
                         <input type="text" id="search-conductor-edit" class="form-control"
-                               placeholder="Buscar por nombre o DNI..." autocomplete="off">
+                            placeholder="Buscar por nombre o DNI..." autocomplete="off">
                     </div>
                 </div>
                 <div id="conductor-results-edit" class="search-results-dropdown"></div>
@@ -254,9 +223,8 @@
                         <input type="hidden" name="ayudantes[]" class="ayudante-hidden-id" value="{{ $ayudante->id }}">
                         <div class="d-flex align-items-center mb-1" style="gap:.5rem;">
                             <div class="flex-grow-1">
-                                <input type="text" class="form-control search-ayudante-edit"
-                                       data-index="{{ $i }}"
-                                       placeholder="Buscar ayudante..." autocomplete="off">
+                                <input type="text" class="form-control search-ayudante-edit" data-index="{{ $i }}"
+                                    placeholder="Buscar ayudante..." autocomplete="off">
                             </div>
                         </div>
                         <div class="search-ayudante-results-edit search-results-dropdown"></div>
@@ -278,14 +246,15 @@
                     <select name="motivo_personal_predefinido" class="form-control">
                         <option value="">-- Seleccione motivo --</option>
                         @foreach($motivosPersonal as $m)
-                            <option value="{{ $m }}">{{ $m }}</option>
+                            <option value="{{ $m->name }}">{{ $m->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-6 form-group mb-3">
-                    <label class="font-weight-bold text-xs text-secondary text-uppercase">Detalle del motivo</label>
+                <div class=" col-md-6 form-group mb-3">
+                    <label class="font-weight-bold text-xs text-secondary text-uppercase">Detalle del
+                        motivo</label>
                     <textarea name="motivo_personal_detalle" class="form-control" rows="2"
-                              placeholder="Descripción adicional del cambio de personal..."></textarea>
+                        placeholder="Descripción adicional del cambio de personal..."></textarea>
                 </div>
             </div>
         </div>
@@ -294,9 +263,10 @@
     {{-- ── HISTORIAL DE CAMBIOS ─────────────────────────────── --}}
     <div class="card border mb-3" id="section-historial">
         <div class="card-header py-2 d-flex align-items-center justify-content-between"
-             style="background:#F8FAFC;cursor:pointer;" id="toggle-historial">
+            style="background:#F8FAFC;cursor:pointer;" id="toggle-historial">
             <div class="d-flex align-items-center">
-                <div class="section-icon mr-3" style="width:32px;height:32px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;">
+                <div class="section-icon mr-3"
+                    style="width:32px;height:32px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;">
                     <i class="fas fa-history" style="color:#475569;font-size:.85rem;"></i>
                 </div>
                 <strong style="font-size:.9rem;">Historial de Cambios</strong>
@@ -337,15 +307,16 @@
                                     <td>
                                         @php
                                             $badgeColors = [
-                                                'turno'     => '#4F46E5',
-                                                'vehiculo'  => '#059669',
+                                                'turno' => '#4F46E5',
+                                                'vehiculo' => '#059669',
                                                 'conductor' => '#EA580C',
                                                 'ayudantes' => '#EA580C',
-                                                'status'    => '#6B7280',
+                                                'status' => '#6B7280',
                                             ];
                                             $bc = $badgeColors[$cambio->campo] ?? '#6B7280';
                                         @endphp
-                                        <span class="badge px-2" style="background:{{ $bc }};color:#fff;border-radius:12px;font-size:.7rem;">
+                                        <span class="badge px-2"
+                                            style="background:{{ $bc }};color:#fff;border-radius:12px;font-size:.7rem;">
                                             {{ $cambio->campo }}
                                         </span>
                                     </td>
@@ -378,8 +349,7 @@
         <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">
             <i class="fas fa-times mr-1"></i> Cancelar
         </button>
-        <button type="submit" id="btnGuardarProg" class="btn font-weight-bold"
-                style="background:#8B5CF6;color:#fff;">
+        <button type="submit" id="btnGuardarProg" class="btn font-weight-bold" style="background:#8B5CF6;color:#fff;">
             <i class="fas fa-sync-alt mr-1"></i> Guardar Reprogramación
         </button>
     </div>
@@ -387,220 +357,242 @@
 
 {{-- ── CSS ──────────────────────────────────────────────────── --}}
 <style>
-.cambio-section .card-header { border-bottom: none; transition: background .15s; }
-.cambio-section .card-header:hover { background: #F1F5F9 !important; }
-.cambio-section.activa { border-color: #C7D7FC !important; }
-.cambio-section.activa#section-turno    { border-color: #C7D7FC !important; }
-.cambio-section.activa#section-vehiculo { border-color: #A7F3D0 !important; }
-.cambio-section.activa#section-personal { border-color: #FED7AA !important; }
+    .cambio-section .card-header {
+        border-bottom: none;
+        transition: background .15s;
+    }
 
-.persona-card-selected {
-    background: #F0FDF4;
-    border: 1px solid #86EFAC;
-    border-radius: 8px;
-    padding: 7px 12px;
-    font-size: .85rem;
-}
+    .cambio-section .card-header:hover {
+        background: #F1F5F9 !important;
+    }
 
-.search-results-dropdown {
-    position: absolute;
-    z-index: 1055;
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.12);
-    max-height: 200px;
-    overflow-y: auto;
-    width: 100%;
-}
-.search-result-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #f1f1f1;
-    transition: background .1s;
-    font-size: .85rem;
-}
-.search-result-item:hover { background: #f8f9fa; }
+    .cambio-section.activa {
+        border-color: #C7D7FC !important;
+    }
+
+    .cambio-section.activa#section-turno {
+        border-color: #C7D7FC !important;
+    }
+
+    .cambio-section.activa#section-vehiculo {
+        border-color: #A7F3D0 !important;
+    }
+
+    .cambio-section.activa#section-personal {
+        border-color: #FED7AA !important;
+    }
+
+    .persona-card-selected {
+        background: #F0FDF4;
+        border: 1px solid #86EFAC;
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: .85rem;
+    }
+
+    .search-results-dropdown {
+        position: absolute;
+        z-index: 1055;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+        max-height: 200px;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    .search-result-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f1f1;
+        transition: background .1s;
+        font-size: .85rem;
+    }
+
+    .search-result-item:hover {
+        background: #f8f9fa;
+    }
 </style>
 
 {{-- ── JS ───────────────────────────────────────────────────── --}}
 <script>
-(function () {
-    'use strict';
+    (function () {
+        'use strict';
 
-    var SEARCH_URL = "{{ route('admin.programacion.search-users') }}";
-    var FECHA      = "{{ $prog->fecha->toDateString() }}";
+        var SEARCH_URL = "{{ route('admin.programacion.search-users') }}";
+        var FECHA = "{{ $prog->fecha->toDateString() }}";
 
-    // ── Toggle secciones con switch ────────────────────────────
-    $('.section-toggle').on('change', function () {
-        var section = $(this).data('section');
-        var $body   = $('#body-' + section);
-        var $hidden = $('#hidden-cambiar-' + section);
-        var $card   = $('#section-' + section);
-        var $badge  = $('#badge-' + section);
+        // ── Toggle secciones con switch ────────────────────────────
+        $('.section-toggle').on('change', function () {
+            var section = $(this).data('section');
+            var $body = $('#body-' + section);
+            var $hidden = $('#hidden-cambiar-' + section);
+            var $card = $('#section-' + section);
+            var $badge = $('#badge-' + section);
 
-        if ($(this).is(':checked')) {
-            $body.removeClass('d-none');
-            $hidden.val('1');
-            $card.addClass('activa');
-            $badge.removeClass('d-none');
-        } else {
-            $body.addClass('d-none');
-            $hidden.val('0');
-            $card.removeClass('activa');
-            $badge.addClass('d-none');
-            // Limpiar inputs de la sección
-            $body.find('select').val('');
-            $body.find('textarea').val('');
-        }
-        $('#alert-sin-cambios').addClass('d-none');
-    });
-
-    // ── Toggle historial ───────────────────────────────────────
-    $('#toggle-historial').on('click', function () {
-        var $body = $('#body-historial');
-        var $icon = $('#historial-chevron');
-        $body.toggleClass('d-none');
-        $icon.toggleClass('fa-chevron-down fa-chevron-up');
-    });
-
-    // ── Búsqueda conductor ─────────────────────────────────────
-    var conductorTimer;
-    $('#search-conductor-edit').on('input', function () {
-        clearTimeout(conductorTimer);
-        var q = $(this).val().trim();
-        if (q.length < 2) { $('#conductor-results-edit').hide(); return; }
-
-        conductorTimer = setTimeout(function () {
-            searchPersonal(q, 'conductor', '#conductor-results-edit', function (user) {
-                $('#conductor_id_edit').val(user.id);
-                $('#conductor-name-display').text(user.name);
-                $('#selected-conductor-edit small').text('(nuevo conductor)').css('color','#059669');
-                $('#conductor-results-edit').hide();
-                $('#search-conductor-edit').val('');
-            });
-        }, 300);
-    });
-
-    // ── Búsqueda ayudantes ─────────────────────────────────────
-    var ayudanteTimers = {};
-    $(document).on('input', '.search-ayudante-edit', function () {
-        var $input = $(this);
-        var index  = $input.data('index');
-        clearTimeout(ayudanteTimers[index]);
-
-        var q = $input.val().trim();
-        if (q.length < 2) {
-            $input.closest('.ayudante-edit-slot').find('.search-ayudante-results-edit').hide();
-            return;
-        }
-
-        ayudanteTimers[index] = setTimeout(function () {
-            var $slot = $input.closest('.ayudante-edit-slot');
-            var $drop = $slot.find('.search-ayudante-results-edit');
-
-            searchPersonal(q, 'ayudante', $drop, function (user) {
-                $slot.find('.ayudante-hidden-id').val(user.id);
-                $slot.find('.ayudante-name-display').text(user.name);
-                $slot.find('.selected-ayudante-display small').text('(nuevo ayudante)').css('color','#059669');
-                $drop.hide();
-                $input.val('');
-            });
-        }, 300);
-    });
-
-    // ── Función genérica de búsqueda ───────────────────────────
-    function searchPersonal(q, rol, dropSelector, onSelect) {
-        var excludeIds = [];
-        var cid = $('#conductor_id_edit').val();
-        if (cid) excludeIds.push(cid);
-        $('.ayudante-hidden-id').each(function () {
-            if ($(this).val()) excludeIds.push($(this).val());
+            if ($(this).is(':checked')) {
+                $body.removeClass('d-none');
+                $hidden.val('1');
+                $card.addClass('activa');
+                $badge.removeClass('d-none');
+            } else {
+                $body.addClass('d-none');
+                $hidden.val('0');
+                $card.removeClass('activa');
+                $badge.addClass('d-none');
+                // Limpiar inputs de la sección
+                $body.find('select').val('');
+                $body.find('textarea').val('');
+            }
+            $('#alert-sin-cambios').addClass('d-none');
         });
 
-        $.ajax({
-            url: SEARCH_URL,
-            data: { q: q, rol: rol, fecha: FECHA, exclude: excludeIds },
-            success: function (users) {
-                var $drop = typeof dropSelector === 'string' ? $(dropSelector) : dropSelector;
-                if (!users.length) {
-                    $drop.html('<div class="search-result-item text-muted">Sin resultados.</div>').show();
-                    return;
-                }
-                var html = users.map(function (u) {
-                    return '<div class="search-result-item" data-id="' + u.id + '" data-name="' + u.name + '">'
-                         + '<strong>' + u.name + '</strong>'
-                         + '<div style="font-size:.75rem;color:#6b7280;">DNI ' + u.dni + '</div>'
-                         + '</div>';
-                }).join('');
-                $drop.html(html).show();
+        // ── Toggle historial ───────────────────────────────────────
+        $('#toggle-historial').on('click', function () {
+            var $body = $('#body-historial');
+            var $icon = $('#historial-chevron');
+            $body.toggleClass('d-none');
+            $icon.toggleClass('fa-chevron-down fa-chevron-up');
+        });
 
-                $drop.off('click').on('click', '.search-result-item', function () {
-                    onSelect({ id: $(this).data('id'), name: $(this).data('name') });
+        // ── Búsqueda conductor ─────────────────────────────────────
+        var conductorTimer;
+        $('#search-conductor-edit').on('input', function () {
+            clearTimeout(conductorTimer);
+            var q = $(this).val().trim();
+            if (q.length < 2) { $('#conductor-results-edit').hide(); return; }
+
+            conductorTimer = setTimeout(function () {
+                searchPersonal(q, 'conductor', '#conductor-results-edit', function (user) {
+                    $('#conductor_id_edit').val(user.id);
+                    $('#conductor-name-display').text(user.name);
+                    $('#selected-conductor-edit small').text('(nuevo conductor)').css('color', '#059669');
+                    $('#conductor-results-edit').hide();
+                    $('#search-conductor-edit').val('');
                 });
+            }, 300);
+        });
+
+        // ── Búsqueda ayudantes ─────────────────────────────────────
+        var ayudanteTimers = {};
+        $(document).on('input', '.search-ayudante-edit', function () {
+            var $input = $(this);
+            var index = $input.data('index');
+            clearTimeout(ayudanteTimers[index]);
+
+            var q = $input.val().trim();
+            if (q.length < 2) {
+                $input.closest('.ayudante-edit-slot').find('.search-ayudante-results-edit').hide();
+                return;
+            }
+
+            ayudanteTimers[index] = setTimeout(function () {
+                var $slot = $input.closest('.ayudante-edit-slot');
+                var $drop = $slot.find('.search-ayudante-results-edit');
+
+                searchPersonal(q, 'ayudante', $drop, function (user) {
+                    $slot.find('.ayudante-hidden-id').val(user.id);
+                    $slot.find('.ayudante-name-display').text(user.name);
+                    $slot.find('.selected-ayudante-display small').text('(nuevo ayudante)').css('color', '#059669');
+                    $drop.hide();
+                    $input.val('');
+                });
+            }, 300);
+        });
+
+        // ── Función genérica de búsqueda ───────────────────────────
+        function searchPersonal(q, rol, dropSelector, onSelect) {
+            var excludeIds = [];
+            var cid = $('#conductor_id_edit').val();
+            if (cid) excludeIds.push(cid);
+            $('.ayudante-hidden-id').each(function () {
+                if ($(this).val()) excludeIds.push($(this).val());
+            });
+
+            $.ajax({
+                url: SEARCH_URL,
+                data: { q: q, rol: rol, fecha: FECHA, exclude: excludeIds },
+                success: function (users) {
+                    var $drop = typeof dropSelector === 'string' ? $(dropSelector) : dropSelector;
+                    if (!users.length) {
+                        $drop.html('<div class="search-result-item text-muted">Sin resultados.</div>').show();
+                        return;
+                    }
+                    var html = users.map(function (u) {
+                        return '<div class="search-result-item" data-id="' + u.id + '" data-name="' + u.name + '">'
+                            + '<strong>' + u.name + '</strong>'
+                            + '<div style="font-size:.75rem;color:#6b7280;">DNI ' + u.dni + '</div>'
+                            + '</div>';
+                    }).join('');
+                    $drop.html(html).show();
+
+                    $drop.off('click').on('click', '.search-result-item', function () {
+                        onSelect({ id: $(this).data('id'), name: $(this).data('name') });
+                    });
+                }
+            });
+        }
+
+        // Cerrar dropdowns al clic fuera
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('#search-conductor-edit, #conductor-results-edit').length) {
+                $('#conductor-results-edit').hide();
+            }
+            if (!$(e.target).closest('.search-ayudante-edit, .search-ayudante-results-edit').length) {
+                $('.search-ayudante-results-edit').hide();
             }
         });
-    }
 
-    // Cerrar dropdowns al clic fuera
-    $(document).on('click', function (e) {
-        if (!$(e.target).closest('#search-conductor-edit, #conductor-results-edit').length) {
-            $('#conductor-results-edit').hide();
-        }
-        if (!$(e.target).closest('.search-ayudante-edit, .search-ayudante-results-edit').length) {
-            $('.search-ayudante-results-edit').hide();
-        }
-    });
+        // ── Validación antes de submit ─────────────────────────────
+        $('#formProgramacion').on('submit', function (e) {
+            var algunCambio = false;
 
-    // ── Validación antes de submit ─────────────────────────────
-    $('#formProgramacion').on('submit', function (e) {
-        var algunCambio = false;
-
-        // ── Turno ──
-        if ($('#toggle-turno').is(':checked')) {
-            algunCambio = true;
-            if (!$('#select-nuevo-turno').val()) {
-                e.preventDefault(); e.stopImmediatePropagation();
-                Swal.fire('Atención', 'Seleccione el nuevo turno.', 'warning'); return false;
+            // ── Turno ──
+            if ($('#toggle-turno').is(':checked')) {
+                algunCambio = true;
+                if (!$('#select-nuevo-turno').val()) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    Swal.fire('Atención', 'Seleccione el nuevo turno.', 'warning'); return false;
+                }
+                if (!$('select[name="motivo_turno_predefinido"]').val()) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    Swal.fire('Atención', 'Seleccione el motivo predefinido del cambio de turno.', 'warning'); return false;
+                }
             }
-            if (!$('select[name="motivo_turno_predefinido"]').val()) {
-                e.preventDefault(); e.stopImmediatePropagation();
-                Swal.fire('Atención', 'Seleccione el motivo predefinido del cambio de turno.', 'warning'); return false;
-            }
-        }
 
-        // ── Vehículo ──
-        if ($('#toggle-vehiculo').is(':checked')) {
-            algunCambio = true;
-            if (!$('#select-nuevo-vehiculo').val()) {
-                e.preventDefault(); e.stopImmediatePropagation();
-                Swal.fire('Atención', 'Seleccione el nuevo vehículo.', 'warning'); return false;
+            // ── Vehículo ──
+            if ($('#toggle-vehiculo').is(':checked')) {
+                algunCambio = true;
+                if (!$('#select-nuevo-vehiculo').val()) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    Swal.fire('Atención', 'Seleccione el nuevo vehículo.', 'warning'); return false;
+                }
+                if (!$('select[name="motivo_vehiculo_predefinido"]').val()) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    Swal.fire('Atención', 'Seleccione el motivo predefinido del cambio de vehículo.', 'warning'); return false;
+                }
             }
-            if (!$('select[name="motivo_vehiculo_predefinido"]').val()) {
-                e.preventDefault(); e.stopImmediatePropagation();
-                Swal.fire('Atención', 'Seleccione el motivo predefinido del cambio de vehículo.', 'warning'); return false;
-            }
-        }
 
-        // ── Personal ──
-        if ($('#toggle-personal').is(':checked')) {
-            algunCambio = true;
-            if (!$('#conductor_id_edit').val()) {
-                e.preventDefault(); e.stopImmediatePropagation();
-                Swal.fire('Atención', 'El conductor es requerido.', 'warning'); return false;
+            // ── Personal ──
+            if ($('#toggle-personal').is(':checked')) {
+                algunCambio = true;
+                if (!$('#conductor_id_edit').val()) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    Swal.fire('Atención', 'El conductor es requerido.', 'warning'); return false;
+                }
+                if (!$('select[name="motivo_personal_predefinido"]').val()) {
+                    e.preventDefault(); e.stopImmediatePropagation();
+                    Swal.fire('Atención', 'Seleccione el motivo predefinido del cambio de personal.', 'warning'); return false;
+                }
             }
-            if (!$('select[name="motivo_personal_predefinido"]').val()) {
+
+            if (!algunCambio) {
                 e.preventDefault(); e.stopImmediatePropagation();
-                Swal.fire('Atención', 'Seleccione el motivo predefinido del cambio de personal.', 'warning'); return false;
+                $('#alert-sin-cambios').removeClass('d-none');
+                return false;
             }
-        }
+        });
 
-        if (!algunCambio) {
-            e.preventDefault(); e.stopImmediatePropagation();
-            $('#alert-sin-cambios').removeClass('d-none');
-            return false;
-        }
-    });
-
-})();
+    })();
 </script>

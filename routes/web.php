@@ -21,7 +21,8 @@ use App\Http\Controllers\admin\PersonalGroupController;
 use App\Http\Controllers\admin\ProgramacionController;
 use App\Http\Controllers\admin\CambioController;
 use App\Http\Controllers\admin\CambioMasivoController;
-
+use App\Http\Controllers\admin\DashboardController;
+use App\Http\Controllers\admin\MantenimientoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,8 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+
 
     // MÓDULO ADMINISTRATIVO (PROTEGIDO)
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
@@ -207,5 +210,27 @@ Route::middleware([
     Route::post('admin/cambios-masivos/{id}/revertir', [CambioMasivoController::class, 'revertFila'])->name('admin.cambios-masivos.revertir');
     Route::resource('admin/cambios-masivos', CambioMasivoController::class)->only(['index', 'show', 'store'])->names('admin.cambios-masivos');
 
+
+
+
+
+    //
+    Route::get('admin/monitoreo', [DashboardController::class, 'index'])->name('admin.monitoreo.index');
+    Route::get('admin/monitoreo/detalle/{id}', [DashboardController::class, 'detalle'])->name('admin.monitoreo.detalle');
+    Route::get('admin/monitoreo/personal-disponible', [DashboardController::class, 'personalDisponible'])->name('admin.monitoreo.personal-disponible');
+    Route::post('admin/monitoreo/reemplazar/{id}', [DashboardController::class, 'reemplazar'])->name('admin.monitoreo.reemplazar');
+    Route::post('admin/monitoreo/cambiar-turno/{id}', [DashboardController::class, 'cambiarTurno'])->name('admin.monitoreo.cambiar-turno');
+    Route::post('admin/monitoreo/cambiar-vehiculo/{id}', [DashboardController::class, 'cambiarVehiculo'])->name('admin.monitoreo.cambiar-vehiculo');
+    Route::get('admin/monitoreo/verificar-asistencia', [DashboardController::class, 'verificarAsistencia'])->name('admin.monitoreo.verificar-asistencia');
+
+    // MANTENIMIENTOS
+    Route::get('admin/mantenimientos/form-data',                    [MantenimientoController::class, 'formData'])->name('admin.mantenimientos.form-data');
+    Route::get('admin/mantenimientos/{id}/horarios',                [MantenimientoController::class, 'horarios'])->name('admin.mantenimientos.horarios');
+    Route::post('admin/mantenimientos/{id}/horarios',               [MantenimientoController::class, 'storeHorario'])->name('admin.mantenimientos.horarios.store');
+    Route::put('admin/mantenimientos/horarios/{horario}',           [MantenimientoController::class, 'updateHorario'])->name('admin.mantenimientos.horarios.update');
+    Route::delete('admin/mantenimientos/horarios/{horario}',        [MantenimientoController::class, 'destroyHorario'])->name('admin.mantenimientos.horarios.destroy');
+    Route::get('admin/mantenimientos/horarios/{horario}/detalles',  [MantenimientoController::class, 'detalles'])->name('admin.mantenimientos.detalles');
+    Route::post('admin/mantenimientos/detalles/{detalle}',          [MantenimientoController::class, 'updateDetalle'])->name('admin.mantenimientos.detalles.update');
+    Route::resource('admin/mantenimientos', MantenimientoController::class)->only(['index','store','edit','update','destroy'])->names('admin.mantenimientos');
 
 });

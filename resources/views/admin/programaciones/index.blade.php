@@ -13,7 +13,7 @@
                     <i class="far fa-calendar-alt mr-2"></i> Lista de Programaciones
                 </h4>
                 <div class="ml-auto d-flex" style="gap:.5rem;">
-                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-light font-weight-bold">
+                    <a href="{{ route('admin.monitoreo.index') }}" class="btn btn-sm btn-outline-light font-weight-bold">
                         <i class="fas fa-tachometer-alt mr-1"></i> Ir al Dashboard
                     </a>
                     <button type="button" class="btn btn-success font-weight-bold" id="btn-nueva-programacion">
@@ -241,6 +241,7 @@
 
 
             // ── Ver Detalle ────────────────────────────────────────
+            // ── Ver Detalle ────────────────────────────────────────
             $(document).on('click', '.btn-ver', function () {
                 let id = $(this).data('id');
 
@@ -253,150 +254,128 @@
                         'Finalizado': '#10B981',
                         'Cancelado': '#EF4444',
                     };
-
                     const statusColor = statusColors[data.status] || '#6B7280';
-
-                    const statusBadge = `
-                    <span style="background:${statusColor};color:#fff;padding:3px 12px;border-radius:20px;font-size:.78rem;font-weight:700;">
-                        ${data.status}
-                    </span>`;
+                    const statusBadge = `<span style="background:${statusColor};color:#fff;padding:3px 12px;border-radius:20px;font-size:.78rem;font-weight:700;">${data.status}</span>`;
 
                     // ── Ayudantes rows ──
                     const ayudantesRows = (data.ayudantes || []).map((a, i) => `
-                    <tr>
-                        <td class="bg-light font-weight-bold" style="width:38%;font-size:.82rem;">
-                            Ayudante ${i + 1}
-                        </td>
-                        <td style="font-size:.82rem;">
-                            ${a.name}
-                        </td>
-                    </tr>
-                `).join('');
-
-                    // ── Historial rows ──
-                    const campoColors = {
-                        turno: '#4F46E5',
-                        vehiculo: '#059669',
-                        conductor: '#EA580C',
-                        ayudantes: '#EA580C',
-                        status: '#6B7280'
-                    };
-
-                    const historialRows = (data.cambios || []).length
-                        ? data.cambios.map(c => {
-                            const bc = campoColors[c.campo] || '#6B7280';
-
-                            return `
-                            <tr>
-                                <td style="font-size:.75rem;white-space:nowrap;">${c.fecha}</td>
-                                <td style="font-size:.75rem;">${c.usuario}</td>
-                                <td>
-                                    <span style="background:${bc};color:#fff;padding:1px 8px;border-radius:10px;font-size:.7rem;">
-                                        ${c.campo}
-                                    </span>
-                                </td>
-                                <td style="font-size:.75rem;color:#dc3545;">
-                                    ${c.valor_anterior ?? '—'}
-                                </td>
-                                <td style="font-size:.75rem;color:#198754;">
-                                    ${c.valor_nuevo ?? '—'}
-                                </td>
-                                <td style="font-size:.75rem;color:#6B7280;">
-                                    ${c.motivo ?? '—'}
-                                </td>
-                            </tr>`;
-                        }).join('')
-                        : `
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-3" style="font-size:.82rem;">
-                                <i class="fas fa-inbox mr-1"></i>Sin cambios registrados.
-                            </td>
-                        </tr>`;
+                <tr>
+                    <td class="bg-light font-weight-bold" style="width:38%;font-size:.82rem;">Ayudante ${i + 1}</td>
+                    <td style="font-size:.82rem;">${a.name}</td>
+                </tr>
+            `).join('');
 
                     const html = `
-                    <table class="table table-bordered table-sm mb-3">
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="width:38%;font-size:.82rem;">Fecha</td>
-                            <td style="font-size:.82rem;"><strong>${data.fecha}</strong></td>
-                        </tr>
+                <table class="table table-bordered table-sm mb-3">
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="width:38%;font-size:.82rem;">Fecha</td>
+                        <td style="font-size:.82rem;"><strong>${data.fecha}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Estado</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Grupo</td>
+                        <td style="font-size:.82rem;">${data.group?.name ?? '-'}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Zona</td>
+                        <td style="font-size:.82rem;">${data.zone?.name ?? '-'}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Turno</td>
+                        <td style="font-size:.82rem;">${data.schedule?.name ?? '-'} (${data.schedule?.time_start ?? ''} — ${data.schedule?.time_end ?? ''})</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Vehículo</td>
+                        <td style="font-size:.82rem;">${data.vehicle?.name ?? '-'} — ${data.vehicle?.code ?? ''}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Conductor</td>
+                        <td style="font-size:.82rem;">${data.conductor?.name ?? '-'}</td>
+                    </tr>
+                    ${ayudantesRows}
+                    <tr>
+                        <td class="bg-light font-weight-bold" style="font-size:.82rem;">Observaciones</td>
+                        <td style="font-size:.82rem;">${data.observaciones ?? '-'}</td>
+                    </tr>
+                </table>
 
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Estado</td>
-                            <td>${statusBadge}</td>
-                        </tr>
+                <div class="d-flex align-items-center mb-2">
+                    <strong style="font-size:.85rem;">
+                        <i class="fas fa-history mr-1 text-secondary"></i> Historial de Cambios
+                    </strong>
+                    <span class="badge badge-secondary ml-2" id="historial-count" style="display:none;"></span>
+                </div>
 
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Grupo</td>
-                            <td style="font-size:.82rem;">${data.group?.name ?? '-'}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Zona</td>
-                            <td style="font-size:.82rem;">${data.zone?.name ?? '-'}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Turno</td>
-                            <td style="font-size:.82rem;">
-                                ${data.schedule?.name ?? '-'}
-                                (${data.schedule?.time_start ?? ''} — ${data.schedule?.time_end ?? ''})
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Vehículo</td>
-                            <td style="font-size:.82rem;">
-                                ${data.vehicle?.name ?? '-'} — ${data.vehicle?.code ?? ''}
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Conductor</td>
-                            <td style="font-size:.82rem;">
-                                ${data.conductor?.name ?? '-'}
-                            </td>
-                        </tr>
-
-                        ${ayudantesRows}
-
-                        <tr>
-                            <td class="bg-light font-weight-bold" style="font-size:.82rem;">Observaciones</td>
-                            <td style="font-size:.82rem;">
-                                ${data.observaciones ?? '-'}
-                            </td>
-                        </tr>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0" style="border:1px solid #dee2e6;border-radius:8px;">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="font-size:.75rem;">Fecha</th>
+                                <th style="font-size:.75rem;">Usuario</th>
+                                <th style="font-size:.75rem;">Campo</th>
+                                <th style="font-size:.75rem;">Anterior</th>
+                                <th style="font-size:.75rem;">Nuevo</th>
+                                <th style="font-size:.75rem;">Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historial-tbody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3" style="font-size:.82rem;">
+                                    <i class="fas fa-spinner fa-spin mr-1"></i> Cargando historial...
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
-
-                    <div class="font-weight-bold mb-2" style="font-size:.85rem;">
-                        <i class="fas fa-history mr-1 text-secondary"></i>
-                        Historial de Cambios
-                        ${data.cambios?.length
-                            ? `<span class="badge badge-secondary ml-1">${data.cambios.length}</span>`
-                            : ''}
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover mb-0" style="border:1px solid #dee2e6;border-radius:8px;">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th style="font-size:.75rem;">Fecha</th>
-                                    <th style="font-size:.75rem;">Usuario</th>
-                                    <th style="font-size:.75rem;">Campo</th>
-                                    <th style="font-size:.75rem;">Anterior</th>
-                                    <th style="font-size:.75rem;">Nuevo</th>
-                                    <th style="font-size:.75rem;">Motivo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${historialRows}
-                            </tbody>
-                        </table>
-                    </div>`;
+                </div>`;
 
                     $('#DetalleModalBody').html(html);
                     $('#DetalleModal').modal('show');
+
+                    // ── Cargar historial desde endpoint dedicado ──
+                    $.get("{{ url('admin/programacion') }}/" + id + "/historial", function (hist) {
+                        const campoColors = {
+                            turno: '#4F46E5',
+                            vehiculo: '#059669',
+                            conductor: '#EA580C',
+                            ayudantes: '#EA580C',
+                            status: '#6B7280',
+                        };
+
+                        const rows = hist.cambios.length
+                            ? hist.cambios.map(c => {
+                                const bc = campoColors[c.campo] || '#6B7280';
+                                return `<tr>
+                            <td style="font-size:.75rem;white-space:nowrap;">${c.fecha}</td>
+                            <td style="font-size:.75rem;">${c.usuario}</td>
+                            <td>
+                                <span style="background:${bc};color:#fff;padding:1px 8px;border-radius:10px;font-size:.7rem;">
+                                    ${c.campo}
+                                </span>
+                            </td>
+                            <td style="font-size:.75rem;color:#dc3545;">${c.valor_anterior ?? '—'}</td>
+                            <td style="font-size:.75rem;color:#198754;">${c.valor_nuevo ?? '—'}</td>
+                            <td style="font-size:.75rem;color:#6B7280;">${c.motivo ?? '—'}</td>
+                        </tr>`;
+                            }).join('')
+                            : `<tr>
+                        <td colspan="6" class="text-center text-muted py-3" style="font-size:.82rem;">
+                            <i class="fas fa-inbox mr-1"></i>Sin cambios registrados.
+                        </td>
+                    </tr>`;
+
+                        $('#historial-tbody').html(rows);
+
+                        if (hist.cambios.length) {
+                            $('#historial-count').text(hist.cambios.length).show();
+                        }
+                    });
                 });
             });
+
+
 
             // ── Editar ─────────────────────────────────────────────
             $(document).on('click', '.btn-editar', function () {
@@ -419,25 +398,25 @@
                         );
                     } else {
                         let rows = data.cambios.map(c => `
-                                            <tr>
-                                                <td class="text-nowrap">${c.fecha}</td>
-                                                <td>${c.usuario}</td>
-                                                <td><span class="badge badge-secondary">${c.campo}</span></td>
-                                                <td><small class="text-danger">${c.valor_anterior ?? '—'}</small></td>
-                                                <td><small class="text-success">${c.valor_nuevo ?? '—'}</small></td>
-                                                <td><small>${c.motivo ?? '—'}</small></td>
-                                            </tr>`).join('');
+                                                <tr>
+                                                    <td class="text-nowrap">${c.fecha}</td>
+                                                    <td>${c.usuario}</td>
+                                                    <td><span class="badge badge-secondary">${c.campo}</span></td>
+                                                    <td><small class="text-danger">${c.valor_anterior ?? '—'}</small></td>
+                                                    <td><small class="text-success">${c.valor_nuevo ?? '—'}</small></td>
+                                                    <td><small>${c.motivo ?? '—'}</small></td>
+                                                </tr>`).join('');
                         $('#HistorialModalBody').html(`
-                                            <div class="table-responsive">
-                                            <table class="table table-sm table-bordered">
-                                                <thead class="thead-light">
-                                                    <tr>
-                                                        <th>Fecha</th><th>Usuario</th><th>Campo</th>
-                                                        <th>Anterior</th><th>Nuevo</th><th>Motivo</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>${rows}</tbody>
-                                            </table></div>`);
+                                                <div class="table-responsive">
+                                                <table class="table table-sm table-bordered">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>Fecha</th><th>Usuario</th><th>Campo</th>
+                                                            <th>Anterior</th><th>Nuevo</th><th>Motivo</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>${rows}</tbody>
+                                                </table></div>`);
                     }
                     $('#HistorialModal').modal('show');
                 });

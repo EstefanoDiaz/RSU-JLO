@@ -149,13 +149,11 @@ class CambioMasivoController extends Controller
             $nuevoId = (int) $request->valor_nuevo_id;
             $authId = Auth::id();
 
-            // Construir motivo legible para el historial
             $motivo = Cambios::find($request->cambio_id)?->name ?? '—';
             if ($request->filled('descripcion')) {
                 $motivo .= ' — ' . $request->descripcion;
             }
 
-            // Buscar programaciones en el rango (solo Programado o Reprogramado)
             $query = Programacion::whereBetween('fecha', [$fi, $ff])
                 ->whereIn('status', ['Programado', 'Reprogramado']);
 
@@ -163,7 +161,6 @@ class CambioMasivoController extends Controller
                 $query->where('zone_id', $zoneId);
             }
 
-            // Filtrar solo las que tienen el valor anterior según tipo
             $programaciones = $this->filtrarPorValorAnterior($query, $tipo, $anteriorId)->get();
 
             if ($programaciones->isEmpty()) {
@@ -173,9 +170,9 @@ class CambioMasivoController extends Controller
             }
 
             $afectadas = 0;
+            $saltadas = 0;
 
-            DB::transaction(function () use ($programaciones, $tipo, $anteriorId, $nuevoId, $authId, $motivo, $request, $fi, $ff, $zoneId, &$afectadas) {
-                // Crear el lote
+            DB::transaction(function () use ($programaciones, $tipo, $anteriorId, $nuevoId, $authId, $motivo, $request, $fi, $ff, $zoneId, &$afectadas, &$saltadas) {
                 $lote = CambioMasivo::create([
                     'tipo_cambio' => $tipo,
                     'fecha_inicio' => $fi,
@@ -190,6 +187,35 @@ class CambioMasivoController extends Controller
                 ]);
 
                 foreach ($programaciones as $prog) {
+                    if (in_array($tipo, ['conductor', 'ocupante'])) {
+                        $fecha = $prog->fecha->toDateString();
+
+                        $sinContrato = !\App\Models\Contract::where('user_id', $nuevoId)
+                            ->where('active', true)
+                            ->where('start_date', '<=', $fecha)
+                            ->where(fn($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', $fecha))
+                            ->exists();
+
+                        $enVacaciones = \App\Models\Vacation::where('user_id', $nuevoId)
+                            ->whereRaw('UPPER(status) = ?', ['APROBADA'])
+                            ->where('start_date', '<=', $fecha)
+                            ->where('end_date', '>=', $fecha)
+                            ->exists();
+
+                        $yaOcupado = Programacion::where('fecha', $fecha)
+                            ->where('id', '!=', $prog->id)
+                            ->where('status', '!=', 'Cancelado')
+                            ->where(function ($q) use ($nuevoId) {
+                                $q->where('conductor_id', $nuevoId)
+                                    ->orWhereHas('ayudantes', fn($q2) => $q2->where('user_id', $nuevoId));
+                            })->exists();
+
+                        if ($sinContrato || $enVacaciones || $yaOcupado) {
+                            $saltadas++;
+                            continue;
+                        }
+                    }
+
                     $this->aplicarCambio($prog, $tipo, $anteriorId, $nuevoId, $authId, $motivo, $lote->id);
                     $afectadas++;
                 }
@@ -197,9 +223,12 @@ class CambioMasivoController extends Controller
                 $lote->update(['afectadas' => $afectadas]);
             });
 
-            return response()->json([
-                'message' => "Cambio masivo aplicado correctamente. {$afectadas} programación(es) afectada(s).",
-            ], 200);
+            $msg = "Cambio masivo aplicado correctamente. {$afectadas} programación(es) afectada(s).";
+            if ($saltadas > 0) {
+                $msg .= " {$saltadas} fecha(s) omitida(s) por conflicto de disponibilidad del personal.";
+            }
+
+            return response()->json(['message' => $msg], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -213,9 +242,6 @@ class CambioMasivoController extends Controller
     // ──────────────────────────────────────────────────────────
     // REVERT — revertir UNA fila (un día) de un cambio masivo
     // ──────────────────────────────────────────────────────────
-    // ──────────────────────────────────────────────────────────
-// REVERT — revertir UNA fila (un día) de un cambio masivo
-// ──────────────────────────────────────────────────────────
     public function revertFila(Request $request, $filaId)
     {
         try {
@@ -238,11 +264,19 @@ class CambioMasivoController extends Controller
             $lote = CambioMasivo::find($fila->cambio_masivo_id);
             $tipoCambio = $lote ? $lote->tipo_cambio : $fila->campo;
 
-            // Resolver IDs desde el lote (masivo) o buscarlos por label (individual)
-            $anteriorId = $lote ? $lote->valor_anterior_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_anterior);
-            $nuevoId = $lote ? $lote->valor_nuevo_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_nuevo);
+            // Prioridad: ID real guardado en la fila > ID del lote > fallback por texto (registros antiguos)
+            $anteriorId = $fila->valor_anterior_id
+                ?? ($lote ? $lote->valor_anterior_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_anterior));
+            $nuevoId = $fila->valor_nuevo_id
+                ?? ($lote ? $lote->valor_nuevo_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_nuevo));
 
-            if (!$anteriorId || !$nuevoId) {
+            if (!$anteriorId) {
+                return response()->json([
+                    'message' => 'No se puede revertir: esta programación no tenía un valor asignado antes de este cambio.',
+                ], 422);
+            }
+
+            if (!$nuevoId) {
                 return response()->json(['message' => 'No se pueden resolver los valores para revertir este cambio.'], 422);
             }
 
@@ -286,10 +320,13 @@ class CambioMasivoController extends Controller
                     'programacion_id' => $prog->id,
                     'user_id' => $authId,
                     'campo' => $tipoCambio,
-                    'valor_anterior' => $fila->valor_nuevo,   // lo que estaba (post-cambio)
-                    'valor_nuevo' => $fila->valor_anterior,   // a lo que volvemos
+                    'valor_anterior' => $fila->valor_nuevo,
+                    'valor_anterior_id' => $fila->valor_nuevo_id ?? $nuevoId,
+                    'valor_nuevo' => $fila->valor_anterior,
+                    'valor_nuevo_id' => $fila->valor_anterior_id ?? $anteriorId,
                     'motivo' => 'Reversión de cambio masivo #' . ($lote ? $lote->id : 'individual'),
                     'cambio_masivo_id' => null,
+                    'revertido' => true,
                 ]);
 
                 // Marcar la fila como revertida
@@ -463,7 +500,9 @@ class CambioMasivoController extends Controller
             'user_id' => $authId,
             'campo' => $tipo,
             'valor_anterior' => $valorAnteriorLabel,
+            'valor_anterior_id' => $anteriorId,   // 
             'valor_nuevo' => $valorNuevoLabel,
+            'valor_nuevo_id' => $nuevoId,          //
             'motivo' => $motivo,
             'cambio_masivo_id' => $loteId,
         ]);

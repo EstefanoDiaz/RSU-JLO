@@ -51,11 +51,14 @@
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="{{ asset('custom-crud.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
 @endsection
 
 @section('js')
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -88,6 +91,7 @@
                         $('#VacationModal #VacationModalTitle').html('<i class="fas fa-plus-circle"></i> Nueva Solicitud de Vacaciones');
                         $('#VacationModal .modal-body').html(response);
                         $('#VacationModal').modal("show");
+                        initSelect2Vacation();
 
                         $('#VacationModal form').off("submit").on("submit", function(e) {
                             e.preventDefault();
@@ -108,8 +112,9 @@
                     }
                 });
             });
+            
 
-            // ACCIÓN: BOTÓN EDITAR SOLICITUD PENDIENTE (🎯 CORREGIDO CON ':id')
+            // ACCIÓN: BOTÓN EDITAR
             $(document).on('click', '.btn-editar', function() {
                 let id = $(this).attr('id');
                 $.ajax({
@@ -119,6 +124,7 @@
                         $('#VacationModal #VacationModalTitle').html('<i class="fas fa-edit"></i> Modificar Solicitud');
                         $('#VacationModal .modal-body').html(response);
                         $('#VacationModal').modal("show");
+                        initSelect2Vacation();
 
                         $('#VacationModal form').off("submit").on("submit", function(e) {
                             e.preventDefault();
@@ -139,7 +145,34 @@
                     }
                 });
             });
+
+            // ─── INIT SELECT2 (reutilizable, con destroy previo) ───────────
+            function initSelect2Vacation() {
+                var $select = $('#VacationModal #selectUserId');
+
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
+                }
+
+                $select.select2({
+                    theme: 'bootstrap4',
+                    language: {
+                        noResults: function () {
+                            return 'No se encontraron empleados';
+                        },
+                        searching: function () {
+                            return 'Buscando...';
+                        }
+                    },
+                    placeholder: '-- Seleccione un usuario --',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#VacationModal')
+                });
+            }
         });
+
+    
 
         // ACCIÓN: BOTÓN APROBAR (CHECK)
         $(document).on('click', '.btn-aprobar', function() {

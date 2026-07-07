@@ -131,28 +131,55 @@ $(document).ready(function () {
 
     // Nuevo
     $('#btn-nuevo').click(function () {
-        $.ajax({
-            url: "{{ route('admin.attendance.create') }}",
-            type: "GET",
-            success: function (response) {
-                $('#AttendanceModal #AttendanceModalTitle').html('<i class="fas fa-plus-circle mr-1"></i> Nueva Asistencia');
-                $('#AttendanceModal .modal-body').html(response);
-                $('#AttendanceModal').modal("show");
-                bindFormSubmit();
-            }
-        });
+    $.ajax({
+        url: "{{ route('admin.attendance.create') }}",
+        type: "GET",
+        success: function (response) {
+
+            $('#AttendanceModal #AttendanceModalTitle').html(
+                '<i class="fas fa-plus-circle mr-1"></i> Nueva Asistencia'
+            );
+
+            $('#AttendanceModal .modal-body').html(response);
+
+            $('#AttendanceModal').modal('show');
+
+            // Inicializar Select2 AQUÍ
+            $('#AttendanceModal .select2').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                dropdownParent: $('#AttendanceModal')
+            });
+
+            bindFormSubmit();
+        }
     });
+});
 
     // Editar
     $(document).on('click', '.btn-editar', function () {
         var id = $(this).attr("id");
+
         $.ajax({
             url: "{{ route('admin.attendance.edit', 'id') }}".replace('id', id),
             type: "GET",
             success: function (response) {
-                $('#AttendanceModal #AttendanceModalTitle').html('<i class="fas fa-edit mr-1"></i> Editar Asistencia');
+
+                $('#AttendanceModal #AttendanceModalTitle').html(
+                    '<i class="fas fa-edit mr-1"></i> Editar Asistencia'
+                );
+
                 $('#AttendanceModal .modal-body').html(response);
+
                 $('#AttendanceModal').modal("show");
+
+                // 🔥 Inicializar Select2 aquí (igual que en nuevo)
+                $('#AttendanceModal .select2').select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    dropdownParent: $('#AttendanceModal')
+                });
+
                 bindFormSubmit();
             },
             error: function () {

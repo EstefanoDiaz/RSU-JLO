@@ -187,7 +187,7 @@ class PersonalGroupController extends Controller
             $this->validateActiveContracts($allIds);
 
             // Validar solapamiento de días
-            $this->validateDayOverlap($data['days'], $allIds);
+            $this->validateDayOverlap($data['days'], $allIds, $data['schedule_id']);
 
             DB::transaction(function () use ($data, $ayudantes) {
                 $group = PersonalGroup::create([
@@ -305,7 +305,7 @@ class PersonalGroupController extends Controller
             $this->validateActiveContracts($allIds);
 
             // Solapamiento excluyendo el grupo actual
-            $this->validateDayOverlap($data['days'], $allIds, $id);
+            $this->validateDayOverlap($data['days'], $allIds, $data['schedule_id'], $id);
 
             DB::transaction(function () use ($group, $data, $ayudantes) {
                 $group->update([
@@ -408,6 +408,7 @@ class PersonalGroupController extends Controller
         $days = $request->get('days', []);
         $groupId = $request->get('group_id');         // para excluir en edición
         $excludeIds = $request->get('exclude', []);      // IDs ya seleccionados
+        $scheduleId = $request->get('schedule_id');
 
         // Buscar usertypes que coincidan con el rol
         $usertypeNames = $role === 'conductor'
@@ -426,8 +427,8 @@ class PersonalGroupController extends Controller
             ->limit(10)
             ->get(['id', 'name', 'dni', 'usertype_id']);
 
-        $result = $users->map(function ($u) use ($days, $groupId) {
-            $conflict = $this->checkDayConflict($u->id, $days, $groupId);
+        $result = $users->map(function ($u) use ($days, $groupId, $scheduleId) {
+            $conflict = $this->checkDayConflict($u->id, $days, $scheduleId, $groupId);
             return [
                 'id' => $u->id,
                 'name' => $u->name,
@@ -481,48 +482,116 @@ class PersonalGroupController extends Controller
         }
     }
 
-    private function validateDayOverlap(array $days, array $userIds, ?int $excludeGroupId = null): void
-    {
-        $conflictingGroups = PersonalGroup::where('status', 'Activo')
-            ->when($excludeGroupId, fn($q) => $q->where('id', '!=', $excludeGroupId))
-            ->whereHas('members', fn($q) => $q->whereIn('user_id', $userIds))
-            ->get(['id', 'name', 'days']);
+    
 
-        foreach ($conflictingGroups as $g) {
-            $overlap = array_intersect($days, $g->days ?? []);
-            if (!empty($overlap)) {
-                $conflictUsers = DB::table('personal_group_users')
-                    ->join('users', 'users.id', '=', 'personal_group_users.user_id')
-                    ->where('personal_group_users.personal_group_id', $g->id)
-                    ->whereIn('personal_group_users.user_id', $userIds)
-                    ->pluck('users.name');
+   private function validateDayOverlap(array $days, array $userIds, int $scheduleId, ?int $excludeGroupId = null): void
+{
+    $newSchedule = Schedule::findOrFail($scheduleId);
 
-                throw new \Exception(
-                    'Conflicto de días (' . implode(', ', $overlap) . '): '
-                    . $conflictUsers->implode(', ')
-                    . ' ya está(n) asignado(s) al grupo "' . $g->name . '" en esos días.'
-                );
-            }
+    $conflictingGroups = PersonalGroup::with('schedule')
+        ->where('status', 'Activo')
+        ->when($excludeGroupId, fn($q) => $q->where('id', '!=', $excludeGroupId))
+        ->whereHas('members', fn($q) => $q->whereIn('user_id', $userIds))
+        ->get(['id', 'name', 'days', 'schedule_id']);
+
+    foreach ($conflictingGroups as $g) {
+        $dayOverlap = array_intersect($days, $g->days ?? []);
+        if (empty($dayOverlap)) {
+            continue; // ni siquiera comparten día, no hay conflicto
         }
+
+        // mismo día, ahora sí comparamos horario
+        if (!$g->schedule || !$this->schedulesOverlap(
+            $newSchedule->time_start,
+            $newSchedule->time_end,
+            $g->schedule->time_start,
+            $g->schedule->time_end
+        )) {
+            continue; // mismo día pero turnos distintos, no hay conflicto real
+        }
+
+        $conflictUsers = DB::table('personal_group_users')
+            ->join('users', 'users.id', '=', 'personal_group_users.user_id')
+            ->where('personal_group_users.personal_group_id', $g->id)
+            ->whereIn('personal_group_users.user_id', $userIds)
+            ->pluck('users.name');
+
+        throw new \Exception(
+            'Conflicto de horario (' . implode(', ', $dayOverlap) . '): '
+            . $conflictUsers->implode(', ')
+            . ' ya está(n) asignado(s) al grupo "' . $g->name . '" en ese turno.'
+        );
     }
+}
 
-    private function checkDayConflict(int $userId, array $days, ?int $excludeGroupId = null): ?string
-    {
-        if (empty($days))
-            return null;
-
-        $groups = PersonalGroup::where('status', 'Activo')
-            ->when($excludeGroupId, fn($q) => $q->where('id', '!=', $excludeGroupId))
-            ->whereHas('members', fn($q) => $q->where('user_id', $userId))
-            ->get(['id', 'name', 'days']);
-
-        foreach ($groups as $g) {
-            $overlap = array_intersect($days, $g->days ?? []);
-            if (!empty($overlap)) {
-                return 'Conflicto en ' . implode(', ', $overlap) . ' — grupo "' . $g->name . '"';
-            }
-        }
-
+private function checkDayConflict(int $userId, array $days, ?int $scheduleId = null, ?int $excludeGroupId = null): ?string
+{
+    if (empty($days)) {
         return null;
     }
+
+    $newSchedule = $scheduleId ? Schedule::find($scheduleId) : null;
+
+    $groups = PersonalGroup::with('schedule')
+        ->where('status', 'Activo')
+        ->when($excludeGroupId, fn($q) => $q->where('id', '!=', $excludeGroupId))
+        ->whereHas('members', fn($q) => $q->where('user_id', $userId))
+        ->get(['id', 'name', 'days', 'schedule_id']);
+
+    foreach ($groups as $g) {
+        $overlap = array_intersect($days, $g->days ?? []);
+        if (empty($overlap)) {
+            continue;
+        }
+
+        if ($newSchedule && $g->schedule && !$this->schedulesOverlap(
+            $newSchedule->time_start,
+            $newSchedule->time_end,
+            $g->schedule->time_start,
+            $g->schedule->time_end
+        )) {
+            continue; // mismo día, distinto turno: disponible
+        }
+
+        return 'Conflicto en ' . implode(', ', $overlap) . ' — grupo "' . $g->name . '"';
+    }
+
+    return null;
+}
+
+// ── Helpers de comparación de horarios ──────────────────────
+private function schedulesOverlap(string $start1, string $end1, string $start2, string $end2): bool
+{
+    foreach ($this->buildIntervals($this->timeToMinutes($start1), $this->timeToMinutes($end1)) as $i1) {
+        foreach ($this->buildIntervals($this->timeToMinutes($start2), $this->timeToMinutes($end2)) as $i2) {
+            if ($i1[0] < $i2[1] && $i2[0] < $i1[1]) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private function timeToMinutes(string $time): int
+{
+    [$h, $m] = explode(':', $time);
+    return ((int) $h) * 60 + (int) $m;
+}
+
+// Maneja turnos que cruzan medianoche (ej. 22:00-06:00)
+private function buildIntervals(int $start, int $end): array
+{
+    if ($end > $start) {
+        return [[$start, $end]];
+    }
+    return [[$start, 1440], [0, $end]];
+}
+
+
+
+
+
+
+
+
 }

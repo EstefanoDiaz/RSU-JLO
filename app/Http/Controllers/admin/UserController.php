@@ -16,43 +16,43 @@ class UserController extends Controller
      * Muestra el listado de personal con DataTables (Ajax)
      */
     public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $users = User::with('userType')->select('users.*');
+{
+    if ($request->ajax()) {
+        $users = User::with('userType')->select('users.*');
 
-            return DataTables::of($users)
-                ->addColumn('photo', function ($user) {
-                    $url = $user->profile_photo_path 
-                        ? asset('storage/' . $user->profile_photo_path) 
-                        : asset('vendor/adminlte/dist/img/avatar5.png');
-                    return '<img src="' . $url . '" class="img-circle shadow-sm" width="35" height="35" style="object-fit: cover;">';
-                })
-                ->addColumn('type_name', function ($user) {
-                    return $user->userType ? $user->userType->name : '<span class="text-muted">Sin tipo</span>';
-                })
-                ->addColumn('status', function ($user) {
-                    // Renderizado del badge dinámico según el estado real de la BD
-                    if ($user->status == 1) {
-                        return '<span class="badge badge-success px-2 py-1 rounded-pill"><i class="fas fa-check-circle mr-1"></i> Activo</span>';
-                    }
-                    return '<span class="badge badge-danger px-2 py-1 rounded-pill"><i class="fas fa-times-circle mr-1"></i> Inactivo</span>';
-                })
-                ->addColumn('created_at_formatted', function ($user) {
-                    return $user->created_at->format('d/m/Y g:i A');
-                })
-                ->addColumn('actions', function ($user) {
-                    $btnEdit = '<button class="btn btn-sm btn-warning btn-editar mr-1" id="' . $user->id . '" title="Editar"><i class="fas fa-pen"></i></button>';
-                    $btnDelete = '<form action="' . route('admin.user.destroy', $user->id) . '" method="POST" class="frmEliminar" style="display:inline;">'
-                        . method_field('DELETE') . csrf_field() .
-                        '<button class="btn btn-sm btn-danger" type="submit" title="Eliminar"><i class="fas fa-trash-alt"></i></button></form>';
-                    return $btnEdit . $btnDelete;
-                })
-                ->rawColumns(['photo', 'type_name', 'status', 'actions'])
-                ->make(true);
-        }
-
-        return view('admin.users.index');
+        return DataTables::of($users)
+            ->addColumn('photo', function ($user) {
+                $url = $user->profile_photo_path 
+                    ? asset('storage/' . $user->profile_photo_path) 
+                    : 'https://placehold.co/35x35?text=S/F';
+                return '<img src="' . $url . '" class="img-circle shadow-sm" width="35" height="35" style="object-fit: cover;" alt="Sin foto">';
+            })
+            ->addColumn('type_name', function ($user) {
+                return $user->userType ? $user->userType->name : '<span class="text-muted">Sin tipo</span>';
+            })
+            ->addColumn('status', function ($user) {
+                // Renderizado del badge dinámico según el estado real de la BD
+                if ($user->status == 1) {
+                    return '<span class="badge badge-success px-2 py-1 rounded-pill"><i class="fas fa-check-circle mr-1"></i> Activo</span>';
+                }
+                return '<span class="badge badge-danger px-2 py-1 rounded-pill"><i class="fas fa-times-circle mr-1"></i> Inactivo</span>';
+            })
+            ->addColumn('created_at_formatted', function ($user) {
+                return $user->created_at->format('d/m/Y g:i A');
+            })
+            ->addColumn('actions', function ($user) {
+                $btnEdit = '<button class="btn btn-sm btn-warning btn-editar mr-1" id="' . $user->id . '" title="Editar"><i class="fas fa-pen"></i></button>';
+                $btnDelete = '<form action="' . route('admin.user.destroy', $user->id) . '" method="POST" class="frmEliminar" style="display:inline;">'
+                    . method_field('DELETE') . csrf_field() .
+                    '<button class="btn btn-sm btn-danger" type="submit" title="Eliminar"><i class="fas fa-trash-alt"></i></button></form>';
+                return $btnEdit . $btnDelete;
+            })
+            ->rawColumns(['photo', 'type_name', 'status', 'actions'])
+            ->make(true);
     }
+
+    return view('admin.users.index');
+}
 
     /**
      * Formulario de creación

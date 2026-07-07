@@ -56,11 +56,14 @@
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="{{ asset('custom-crud.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
 @endsection
 
 @section('js')
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function () {
@@ -86,35 +89,66 @@ $(document).ready(function () {
 
     // ─── NUEVO ────────────────────────────────────────────────────────────────
     $('#btn-nuevo').click(function () {
-        $.ajax({
-            url: "{{ route('admin.contract.create') }}",
-            type: "GET",
-            success: function (response) {
-                $('#ContractModal #ContractModalTitle').html('<i class="fas fa-plus-circle mr-1"></i> Nuevo Contrato');
-                $('#ContractModal .modal-body').html(response);
-                $('#ContractModal').modal("show");
-                bindFormSubmit();
-            }
-        });
+    $.ajax({
+        url: "{{ route('admin.contract.create') }}",
+        type: "GET",
+        success: function (response) {
+            $('#ContractModal #ContractModalTitle').html('<i class="fas fa-plus-circle mr-1"></i> Nuevo Contrato');
+            $('#ContractModal .modal-body').html(response);
+            $('#ContractModal').modal("show");
+            initSelect2Contract();
+            bindFormSubmit();
+        }
     });
+});
 
-    // ─── EDITAR ───────────────────────────────────────────────────────────────
-    $(document).on('click', '.btn-editar', function () {
-        var id = $(this).attr("id");
-        $.ajax({
-            url: "{{ route('admin.contract.edit', 'id') }}".replace('id', id),
-            type: "GET",
-            success: function (response) {
-                $('#ContractModal #ContractModalTitle').html('<i class="fas fa-edit mr-1"></i> Editar Contrato');
-                $('#ContractModal .modal-body').html(response);
-                $('#ContractModal').modal("show");
-                bindFormSubmit();
-            },
-            error: function () {
-                Swal.fire('Error', 'No se pudieron recuperar los datos del contrato.', 'error');
-            }
-        });
+// ─── EDITAR ───────────────────────────────────────────────────────────────
+$(document).on('click', '.btn-editar', function () {
+    var id = $(this).attr("id");
+    $.ajax({
+        url: "{{ route('admin.contract.edit', 'id') }}".replace('id', id),
+        type: "GET",
+        success: function (response) {
+            $('#ContractModal #ContractModalTitle').html('<i class="fas fa-edit mr-1"></i> Editar Contrato');
+            $('#ContractModal .modal-body').html(response);
+            $('#ContractModal').modal("show");
+            initSelect2Contract();
+            bindFormSubmit();
+        },
+        error: function () {
+            Swal.fire('Error', 'No se pudieron recuperar los datos del contrato.', 'error');
+        }
     });
+});
+
+// ─── INIT SELECT2 (reutilizable, con destroy previo) ──────────────────────
+function initSelect2Contract() {
+    var $select = $('#ContractModal .select2-users');
+
+    if ($select.hasClass('select2-hidden-accessible')) {
+        $select.select2('destroy');
+    }
+
+    $select.select2({
+        theme: 'bootstrap4', // o 'default', según el tema que uses en el resto del sistema
+        language: {
+            inputTooShort: function () {
+                return 'Escriba al menos 2 letras para buscar';
+            },
+            noResults: function () {
+                return 'No se encontraron empleados';
+            },
+            searching: function () {
+                return 'Buscando...';
+            }
+        },
+        minimumInputLength: 0,
+        placeholder: 'Seleccione un empleado',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#ContractModal')
+    });
+}
 
     // ─── TOGGLE ACTIVO/INACTIVO ───────────────────────────────────────────────
     $(document).on('click', '.btn-toggle', function () {
