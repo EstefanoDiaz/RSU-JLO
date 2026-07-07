@@ -2,8 +2,6 @@
     $editing = isset($group);
     $selectedDays = $editing ? $group->days : [];
 
-    // FIX #1: $group->ayudantes no existe como relación.
-    //         Se filtra members por pivot.role === 'ayudante'
     $existingConductor = null;
     $existingAyudantes = collect();
     if ($editing) {
@@ -486,6 +484,7 @@
                 q: q,
                 role: role,
                 days: days,
+                schedule_id: $('select[name="schedule_id"]').val() || '',
                 group_id: groupId || '',
                 exclude: excludeIds || [],
             },
@@ -541,6 +540,53 @@
             $('.search-ayudante-results').hide();
         }
     });
+
+
+
+
+
+
+    $('select[name="schedule_id"]').on('change', function () {
+    // Revalidar conductor ya seleccionado
+    if (selectedConductor) {
+        revalidateUser(selectedConductor, 'conductor', selectConductor);
+    }
+    // Revalidar ayudantes ya seleccionados
+    selectedAyudantes.forEach(function (ay, i) {
+        if (ay && ay.id) {
+            revalidateUser(ay, 'ayudante', function (u) { selectAyudante(i, u); });
+        }
+    });
+});
+
+function revalidateUser(user, role, onResult) {
+    var days = [];
+    $('input[name="days[]"]:checked').each(function () { days.push($(this).val()); });
+
+    $.ajax({
+        url: SEARCH_URL,
+        data: {
+            q: user.dni, // búsqueda exacta por DNI
+            role: role,
+            days: days,
+            schedule_id: $('select[name="schedule_id"]').val() || '',
+            group_id: groupId || '',
+            exclude: [], // no excluir, queremos verlo a él mismo
+        },
+        success: function (results) {
+            var match = results.find(function (r) { return r.id === user.id; });
+            if (match) onResult(match);
+        }
+    });
+}
+
+
+
+
+
+
+
+
 
     // ── Init: renderizar ayudantes si estamos en edición ──────
     renderAyudanteSlots();

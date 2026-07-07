@@ -185,7 +185,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    // ──────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────
     // PERSONAL DISPONIBLE
     // ──────────────────────────────────────────────────────────
     public function personalDisponible(Request $request)
@@ -203,12 +203,18 @@ class DashboardController extends Controller
         $q = $request->get('q', '');
 
         $prog = Programacion::with('ayudantes')->findOrFail($programacionId);
+
+        // Personal ya perteneciente a esta programación
         $excluir = array_filter(array_merge(
             [$prog->conductor_id],
             $prog->ayudantes->pluck('id')->toArray()
         ));
 
+        // Personal ocupado en otras programaciones ese día EN EL MISMO TURNO
+        // (antes no filtraba por schedule_id, así que excluía a alguien
+        // programado en otro turno del mismo día, aunque no hubiera conflicto real)
         $ocupadosConductores = Programacion::where('fecha', $fecha)
+            ->where('schedule_id', $prog->schedule_id)
             ->where('id', '!=', $programacionId)
             ->where('status', '!=', 'Cancelado')
             ->pluck('conductor_id')
@@ -217,23 +223,49 @@ class DashboardController extends Controller
         $ocupadosAyudantes = DB::table('programacion_ayudante')
             ->join('programaciones', 'programaciones.id', '=', 'programacion_ayudante.programacion_id')
             ->where('programaciones.fecha', $fecha)
+            ->where('programaciones.schedule_id', $prog->schedule_id)
             ->where('programaciones.id', '!=', $programacionId)
             ->where('programaciones.status', '!=', 'Cancelado')
             ->pluck('programacion_ayudante.user_id')
             ->toArray();
 
-        $ocupados = array_unique(array_merge($ocupadosConductores, $ocupadosAyudantes));
-        $tipoNombre = $rol === 'conductor' ? ['Conductor', 'conductor'] : ['Ayudante', 'ayudante'];
+        $ocupados = array_unique(array_merge(
+            $ocupadosConductores,
+            $ocupadosAyudantes
+        ));
+
+        // ========= NUEVO =========
+        // Solo personal presente físicamente ese día
+        $presentesHoy = DB::table('attendances')
+            ->where('date', $fecha)
+            ->where('type', 'Entrada')
+            ->where('status', 'Presente')
+            ->pluck('user_id')
+            ->toArray();
+        // =========================
+
+        $tipoNombre = $rol === 'conductor'
+            ? ['Conductor', 'conductor']
+            : ['Ayudante', 'ayudante'];
 
         $usuarios = User::query()
             ->whereHas('usertype', fn($q2) => $q2->whereIn('name', $tipoNombre))
+
+            // ===== NUEVO FILTRO =====
+            ->whereIn('id', $presentesHoy)
+            // ========================
+
             ->whereHas(
                 'contracts',
                 fn($q2) => $q2
                     ->where('active', true)
                     ->where('start_date', '<=', $fecha)
-                    ->where(fn($q3) => $q3->whereNull('end_date')->orWhere('end_date', '>=', $fecha))
+                    ->where(fn($q3) => $q3
+                        ->whereNull('end_date')
+                        ->orWhere('end_date', '>=', $fecha)
+                    )
             )
+
             ->whereDoesntHave(
                 'vacations',
                 fn($q2) => $q2
@@ -241,15 +273,22 @@ class DashboardController extends Controller
                     ->where('start_date', '<=', $fecha)
                     ->where('end_date', '>=', $fecha)
             )
+
             ->whereNotIn('id', $excluir)
             ->whereNotIn('id', $ocupados)
-            ->when($q, fn($q2) => $q2->where(
-                fn($q3) => $q3
-                    ->where('name', 'LIKE', "%{$q}%")
-                    ->orWhere('dni', 'LIKE', "%{$q}%")
-            ))
+
+            ->when($q, fn($q2) => $q2->where(function ($q3) use ($q) {
+                $q3->where('name', 'LIKE', "%{$q}%")
+                ->orWhere('dni', 'LIKE', "%{$q}%");
+            }))
+
+            ->orderBy('name')
             ->limit(15)
-            ->get(['id', 'name', 'dni']);
+            ->get([
+                'id',
+                'name',
+                'dni'
+            ]);
 
         return response()->json($usuarios);
     }
@@ -288,7 +327,9 @@ class DashboardController extends Controller
                     'user_id' => $authId,
                     'campo' => 'turno',
                     'valor_anterior' => optional($prog->schedule)->name . ' (' . optional($prog->schedule)->time_start . ' - ' . optional($prog->schedule)->time_end . ')',
+                    'valor_anterior_id' => $prog->schedule_id,
                     'valor_nuevo' => $nuevoSchedule->name . ' (' . $nuevoSchedule->time_start . ' - ' . $nuevoSchedule->time_end . ')',
+                    'valor_nuevo_id' => $nuevoSchedule->id,
                     'motivo' => $motivoTexto,
                 ]);
 
@@ -339,7 +380,9 @@ class DashboardController extends Controller
                     'user_id' => $authId,
                     'campo' => 'vehiculo',
                     'valor_anterior' => optional($prog->vehicle)->code . ' — ' . optional($prog->vehicle)->name,
+                    'valor_anterior_id' => $prog->vehicle_id,
                     'valor_nuevo' => $nuevoVehicle->code . ' — ' . $nuevoVehicle->name,
+                    'valor_nuevo_id' => $nuevoVehicle->id,
                     'motivo' => $motivoTexto,
                 ]);
 
@@ -388,7 +431,9 @@ class DashboardController extends Controller
                         'user_id' => $authId,
                         'campo' => 'conductor',
                         'valor_anterior' => optional($prog->conductor)->name ?? '—',
+                        'valor_anterior_id' => $prog->conductor_id, // null si no había conductor, y está bien así
                         'valor_nuevo' => $nuevoUser->name,
+                        'valor_nuevo_id' => $nuevoUser->id,
                         'motivo' => $motivoTexto,
                     ]);
 
@@ -407,16 +452,15 @@ class DashboardController extends Controller
                         ->get($slotIndex);
 
                     $order = $ayudanteActual ? ($ayudanteActual->pivot->order ?? $slotIndex) : $slotIndex;
-                    $oldAyudantes = $prog->ayudantes->sortBy('pivot.order')->pluck('name')->values()->toArray();
-                    $newAyudantes = $oldAyudantes;
-                    $newAyudantes[$slotIndex] = $nuevoUser->name;
 
                     ProgramacionCambio::create([
                         'programacion_id' => $prog->id,
                         'user_id' => $authId,
-                        'campo' => 'ayudantes',
-                        'valor_anterior' => implode(', ', $oldAyudantes),
-                        'valor_nuevo' => implode(', ', $newAyudantes),
+                        'campo' => 'ocupante', // unificado con CambioMasivoController
+                        'valor_anterior' => $ayudanteActual->name ?? '—',
+                        'valor_anterior_id' => $ayudanteActual->id ?? null, // null si el slot estaba vacío
+                        'valor_nuevo' => $nuevoUser->name,
+                        'valor_nuevo_id' => $nuevoUser->id,
                         'motivo' => $motivoTexto,
                     ]);
 
@@ -434,7 +478,6 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }
     }
-
     // ──────────────────────────────────────────────────────────
     // HELPER — construir texto de motivo
     // ──────────────────────────────────────────────────────────

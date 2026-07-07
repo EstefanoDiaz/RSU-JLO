@@ -14,6 +14,7 @@ class ProgramacionCambio extends Model
         'campo',
         'valor_anterior',
         'valor_nuevo',
+        'valor_anterior_id', 'valor_nuevo_id',
         'motivo',
         'cambio_masivo_id',
         'revertido',

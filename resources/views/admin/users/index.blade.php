@@ -26,7 +26,7 @@
                                 <th class="align-middle" width="20%">Email</th>
                                 <th class="align-middle" width="15%">Tipo</th>
                                 <th class="align-middle" width="10%">Estado</th>
-                                <th class="align-middle" width="10%">Creación</th>
+                                
                                 <th class="text-center align-middle" width="5%">Acciones</th>
                             </tr>
                         </thead>
@@ -76,7 +76,6 @@
                     { data: "email", className: 'align-middle' },
                     { data: "type_name", className: 'align-middle' },
                     { data: "status", className: 'align-middle text-center' },
-                    { data: "created_at_formatted", className: 'align-middle text-muted' },
                     { data: "actions", orderable: false, searchable: false, className: 'text-center align-middle text-nowrap' }
                 ],
                 language: { url: 'https://cdn.datatables.net/plug-ins/1.10.16/i18n/Spanish.json' }

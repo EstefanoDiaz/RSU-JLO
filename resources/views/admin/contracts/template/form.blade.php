@@ -1,5 +1,4 @@
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 
 <div class="form-group">
     <label for="user_id">Personal <span class="text-danger">*</span></label>
@@ -13,8 +12,8 @@
         @endforeach
     </select>
     <small class="text-muted">
-        <i class="fas fa-info-circle"></i> Escriba al menos 2 letras para buscar empleados
-    </small>
+    <i class="fas fa-info-circle"></i> Puede escribir para filtrar la lista de empleados
+</small>
 </div>
 
 <div class="form-group">
@@ -86,8 +85,7 @@
 </div>
 
 <script>
-// Mostrar/ocultar fecha fin según tipo de contrato
-document.addEventListener('DOMContentLoaded', function () {
+(function () {
     var typeSelect   = document.getElementById('type');
     var endDateInput = document.getElementById('end_date');
     var activeLabel  = document.getElementById('active_label');
@@ -116,5 +114,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     toggleEndDate();
     toggleActiveLabel();
-});
+})();
 </script>

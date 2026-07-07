@@ -78,18 +78,35 @@ class AttendanceController extends Controller
 
     public function create()
     {
+        $today = Carbon::today()->toDateString();
+
         $users = User::select('id', 'name', 'dni')
-        ->whereHas('contracts') 
-        ->orderBy('name')
-        ->get();
+            ->whereHas('contracts', function ($q) use ($today) {
+                $q->where('active', 1)
+                ->whereDate('start_date', '<=', $today)
+                ->where(function ($q2) use ($today) {
+                    $q2->whereNull('end_date')
+                        ->orWhereDate('end_date', '>=', $today);
+                });
+            })
+            ->orderBy('name')
+            ->get();
+
         $schedules = Schedule::orderBy('time_start')->get();
-        $now       = Carbon::now();
+        $now = Carbon::now();
         $currentSchedule = $this->detectSchedule($now->format('H:i'));
 
-        return view('admin.attendances.create', compact('users', 'schedules', 'currentSchedule', 'now'));
+        return view('admin.attendances.create', compact(
+            'users',
+            'schedules',
+            'currentSchedule',
+            'now'
+        ));
     }
 
-    public function store(Request $request)
+    
+
+public function store(Request $request)
 {
     try {
         $request->validate([
@@ -100,13 +117,33 @@ class AttendanceController extends Controller
             'status'      => 'required|in:Presente,Ausente',
         ]);
 
-        // NUEVA LÓGICA: Contamos cuántas asistencias ya tiene el usuario en este día
+        $user = User::findOrFail($request->user_id);
+
+        $fecha = Carbon::parse($request->date)->toDateString();
+
+        $contratoActivo = $user->contracts()
+            ->where('active', 1)
+            ->whereDate('start_date', '<=', $fecha)
+            ->where(function ($q) use ($fecha) {
+                $q->whereNull('end_date')
+                  ->orWhereDate('end_date', '>=', $fecha);
+            })
+            ->exists();
+
+        if (!$contratoActivo) {
+            return response()->json([
+                'message' => 'El trabajador no tiene un contrato activo para la fecha seleccionada.'
+            ], 422);
+        }
+
+        // Contamos cuántas asistencias tiene ese día
         $conteoRegistros = Attendance::where('user_id', $request->user_id)
             ->whereDate('date', $request->date)
             ->count();
 
-        // Si el conteo es PAR (0, 2, 4...), toca ENTRADA. Si es IMPAR (1, 3, 5...), toca SALIDA.
-        $tipoCalculado = ($conteoRegistros % 2 === 0) ? 'Entrada' : 'Salida';
+        $tipoCalculado = ($conteoRegistros % 2 === 0)
+            ? 'Entrada'
+            : 'Salida';
 
         Attendance::create([
             'user_id'     => $request->user_id,
@@ -118,15 +155,33 @@ class AttendanceController extends Controller
             'notes'       => $request->notes,
         ]);
 
-        return response()->json(['message' => 'Asistencia registrada correctamente'], 200);
+        return response()->json([
+            'message' => 'Asistencia registrada correctamente'
+        ], 200);
+
     } catch (\Illuminate\Validation\ValidationException $e) {
+
         $errors = implode(' | ', $e->validator->errors()->all());
-        return response()->json(['message' => $errors], 422);
+
+        return response()->json([
+            'message' => $errors
+        ], 422);
+
     } catch (\Throwable $th) {
+
         Log::error($th);
-        return response()->json(['message' => 'Error: ' . $th->getMessage()], 500);
+
+        return response()->json([
+            'message' => 'Error: ' . $th->getMessage()
+        ], 500);
     }
 }
+
+
+
+
+
+
 
 public function getAttendanceType(Request $request)
 {
@@ -137,50 +192,111 @@ public function getAttendanceType(Request $request)
         return response()->json(['type' => 'Automático']);
     }
 
-    // 1. Obtener los datos del empleado
     $user = User::find($userId);
 
-    // 2. Obtener las asistencias registradas para este usuario en el día seleccionado
+    if (!$user) {
+        return response()->json([
+            'message' => 'Trabajador no encontrado.'
+        ], 404);
+    }
+
+    $contratoActivo = $user->contracts()
+        ->where('active', 1)
+        ->whereDate('start_date', '<=', $date)
+        ->where(function ($q) use ($date) {
+            $q->whereNull('end_date')
+              ->orWhereDate('end_date', '>=', $date);
+        })
+        ->exists();
+
+    if (!$contratoActivo) {
+        return response()->json([
+            'message' => 'El trabajador no tiene un contrato activo para esa fecha.'
+        ], 422);
+    }
+
     $asistenciasDelDia = Attendance::where('user_id', $userId)
         ->whereDate('date', $date)
         ->orderBy('time', 'asc')
         ->get();
 
     $conteoRegistros = $asistenciasDelDia->count();
-    $type = ($conteoRegistros % 2 === 0) ? 'Entrada' : 'Salida';
 
-    // 3. Formatear la cadena de texto con las horas guardadas (ejemplo: "Entrada (08:30), Salida (13:15)")
+    $type = ($conteoRegistros % 2 === 0)
+        ? 'Entrada'
+        : 'Salida';
+
     if ($conteoRegistros > 0) {
+
         $logStrings = [];
+
         foreach ($asistenciasDelDia as $asistencia) {
             $logStrings[] = $asistencia->type . ' (' . substr($asistencia->time, 0, 5) . ')';
         }
+
         $historialTexto = implode(', ', $logStrings);
+
     } else {
+
         $historialTexto = 'No hay registros para este día.';
     }
 
     return response()->json([
-        'user_name'  => $user->name ?? 'No registrado',
-        'user_dni'   => $user->dni ?? 'No registrado',
-        'user_email' => $user->email ?? 'No registrado',
-        'user_phone' => $user->phone ?? 'No registrado',
+        'user_name'  => $user->name,
+        'user_dni'   => $user->dni,
+        'user_email' => $user->email,
+        'user_phone' => $user->phone,
         'type'       => $type,
         'historial'  => $historialTexto,
-        'sugerencia' => $conteoRegistros === 0 
-                        ? 'Primer registro del día - debe ser ENTRADA' 
-                        : 'Siguiente registro correlativo - debe ser ' . strtoupper($type)
+        'sugerencia' => $conteoRegistros === 0
+            ? 'Primer registro del día - debe ser ENTRADA'
+            : 'Siguiente registro correlativo - debe ser ' . strtoupper($type)
     ]);
 }
 
-    public function edit(string $id)
-    {
-        $attendance = Attendance::findOrFail($id);
-        $users      = User::select('id', 'name', 'dni')->orderBy('name')->get();
-        $schedules  = Schedule::orderBy('time_start')->get();
 
-        return view('admin.attendances.edit', compact('attendance', 'users', 'schedules'));
-    }
+
+
+
+
+
+
+
+
+
+public function edit(string $id)
+{
+    $attendance = Attendance::findOrFail($id);
+
+    $today = Carbon::today()->toDateString();
+
+    $users = User::select('id', 'name', 'dni')
+        ->whereHas('contracts', function ($q) use ($today) {
+            $q->where('active', 1)
+              ->whereDate('start_date', '<=', $today)
+              ->where(function ($q2) use ($today) {
+                  $q2->whereNull('end_date')
+                     ->orWhereDate('end_date', '>=', $today);
+              });
+        })
+        ->orderBy('name')
+        ->get();
+
+    $schedules = Schedule::orderBy('time_start')->get();
+
+    return view('admin.attendances.edit', compact(
+        'attendance',
+        'users',
+        'schedules'
+    ));
+}
+
+
+
+
+
+
+
 
     public function update(Request $request, string $id)
     {

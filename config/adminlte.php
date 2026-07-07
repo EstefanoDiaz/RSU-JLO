@@ -348,7 +348,7 @@ return [
                 [
                     'text' => 'Mantenimientos',
                     'icon' => 'fas fa-fw fa-tools',
-                    'url' => 'vehiculos/mantenimientos',
+                    'route' => 'admin.mantenimientos.index',
                 ],
             ],
         ],

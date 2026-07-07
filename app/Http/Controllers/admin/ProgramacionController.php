@@ -1075,13 +1075,13 @@ class ProgramacionController extends Controller
 
             // ── Ya tiene una programación (no cancelada) esa fecha, como conductor o ayudante ──
             $yaOcupado = Programacion::where('fecha', $fecha)
-                ->where('status', '!=', 'Cancelado')
-                ->when($excludeProgId, fn($q) => $q->where('id', '!=', $excludeProgId))
-                ->where(function ($q) use ($user) {
-                    $q->where('conductor_id', $user->id)
-                        ->orWhereHas('ayudantes', fn($q2) => $q2->where('user_id', $user->id));
-                })
-                ->exists();
+            ->whereIn('status', ['Programado', 'Reprogramado'])   // solo estados activos
+            ->when($excludeProgId, fn($q) => $q->where('id', '!=', $excludeProgId))
+            ->where(function ($q) use ($user) {
+                $q->where('conductor_id', $user->id)
+                    ->orWhereHas('ayudantes', fn($q2) => $q2->where('user_id', $user->id));
+            })
+            ->exists();
 
             if ($yaOcupado) {
                 $ocupado[] = $user->name;

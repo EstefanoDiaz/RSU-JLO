@@ -264,11 +264,19 @@ class CambioMasivoController extends Controller
             $lote = CambioMasivo::find($fila->cambio_masivo_id);
             $tipoCambio = $lote ? $lote->tipo_cambio : $fila->campo;
 
-            // Resolver IDs desde el lote (masivo) o buscarlos por label (individual)
-            $anteriorId = $lote ? $lote->valor_anterior_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_anterior);
-            $nuevoId = $lote ? $lote->valor_nuevo_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_nuevo);
+            // Prioridad: ID real guardado en la fila > ID del lote > fallback por texto (registros antiguos)
+            $anteriorId = $fila->valor_anterior_id
+                ?? ($lote ? $lote->valor_anterior_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_anterior));
+            $nuevoId = $fila->valor_nuevo_id
+                ?? ($lote ? $lote->valor_nuevo_id : $this->resolverIdDesdeLabel($tipoCambio, $fila->valor_nuevo));
 
-            if (!$anteriorId || !$nuevoId) {
+            if (!$anteriorId) {
+                return response()->json([
+                    'message' => 'No se puede revertir: esta programación no tenía un valor asignado antes de este cambio.',
+                ], 422);
+            }
+
+            if (!$nuevoId) {
                 return response()->json(['message' => 'No se pueden resolver los valores para revertir este cambio.'], 422);
             }
 
@@ -312,10 +320,13 @@ class CambioMasivoController extends Controller
                     'programacion_id' => $prog->id,
                     'user_id' => $authId,
                     'campo' => $tipoCambio,
-                    'valor_anterior' => $fila->valor_nuevo,   // lo que estaba (post-cambio)
-                    'valor_nuevo' => $fila->valor_anterior,   // a lo que volvemos
+                    'valor_anterior' => $fila->valor_nuevo,
+                    'valor_anterior_id' => $fila->valor_nuevo_id ?? $nuevoId,
+                    'valor_nuevo' => $fila->valor_anterior,
+                    'valor_nuevo_id' => $fila->valor_anterior_id ?? $anteriorId,
                     'motivo' => 'Reversión de cambio masivo #' . ($lote ? $lote->id : 'individual'),
                     'cambio_masivo_id' => null,
+                    'revertido' => true,
                 ]);
 
                 // Marcar la fila como revertida
@@ -489,7 +500,9 @@ class CambioMasivoController extends Controller
             'user_id' => $authId,
             'campo' => $tipo,
             'valor_anterior' => $valorAnteriorLabel,
+            'valor_anterior_id' => $anteriorId,   // 
             'valor_nuevo' => $valorNuevoLabel,
+            'valor_nuevo_id' => $nuevoId,          //
             'motivo' => $motivo,
             'cambio_masivo_id' => $loteId,
         ]);
